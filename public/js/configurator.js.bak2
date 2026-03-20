@@ -1,0 +1,840 @@
+/**
+ * Configurator main JS — replaces all inline scripts + modal.js + build-exporter-compat.js + templates.js + slot-clear.js
+ * Works with Laravel API endpoints instead of localStorage/JSON files
+ */
+(function () {
+    'use strict';
+
+    const CSRF = window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content;
+    const AUTH = window.AUTH_USER;
+
+    // ========== Custom Notification / Confirm ==========
+    function showNotification(type, message, duration) {
+        duration = duration || 4000;
+        const container = document.getElementById('notify-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = 'notify-toast ' + type;
+        toast.innerHTML = '<span>' + esc(message) + '</span><button class="notify-close">&times;</button>';
+        container.appendChild(toast);
+        const close = () => {
+            toast.style.animation = 'notifyOut .3s ease forwards';
+            setTimeout(() => toast.remove(), 300);
+        };
+        toast.querySelector('.notify-close').addEventListener('click', close);
+        setTimeout(close, duration);
+    }
+
+    function showConfirm(title, text) {
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.className = 'confirm-overlay';
+            overlay.innerHTML =
+                '<div class="confirm-card">' +
+                    '<div class="confirm-title">' + esc(title) + '</div>' +
+                    '<div class="confirm-text">' + esc(text) + '</div>' +
+                    '<div class="confirm-actions">' +
+                        '<button class="btn-confirm-yes">Да</button>' +
+                        '<button class="btn-confirm-no">Отмена</button>' +
+                    '</div>' +
+                '</div>';
+            document.body.appendChild(overlay);
+            overlay.querySelector('.btn-confirm-yes').addEventListener('click', () => { overlay.remove(); resolve(true); });
+            overlay.querySelector('.btn-confirm-no').addEventListener('click', () => { overlay.remove(); resolve(false); });
+            overlay.addEventListener('click', e => { if (e.target === overlay) { overlay.remove(); resolve(false); } });
+        });
+    }
+
+    // ========== Selection state ==========
+    const SLOT_LABELS = {
+        cpu: 'Процессор', motherboard: 'Материнская плата', ram: 'Оперативная память',
+        gpu: 'Видеокарта', storage: 'Накопитель', psu: 'Блок питания', cooler: 'Кулер', case: 'Корпус'
+    };
+    const REQUIRED_SLOTS = ['cpu', 'motherboard', 'ram', 'psu', 'case'];
+
+    const selection = { cpu: null, motherboard: null, ram: null, gpu: null, storage: null, psu: null, cooler: null, case: null };
+    window.selection = selection;
+
+    function formatPrice(v) { return v ? v.toLocaleString('ru-RU') + ' ₽' : '0 ₽'; }
+
+    // ========== Briefs & Total ==========
+    function updateBriefsAndTotal() {
+        let total = 0;
+        for (const slot of Object.keys(selection)) {
+            const s = selection[slot];
+            const el = document.getElementById(slot + '-brief');
+            if (el) {
+                if (s) { el.textContent = s.name + ' — ' + formatPrice(s.price); total += (s.price || 0); }
+                else el.textContent = 'Не выбран';
+            }
+            const clearBtn = document.querySelector('[data-slot-clear="' + slot + '"]');
+            if (clearBtn) clearBtn.style.display = s ? 'inline-block' : 'none';
+        }
+        document.getElementById('total-price').textContent = formatPrice(total);
+        runCompatibilityChecks();
+    }
+
+    // ========== Compatibility Checks ==========
+    function runCompatibilityChecks() {
+        const warningsBlock = document.getElementById('warnings-block');
+        if (!warningsBlock) return;
+        warningsBlock.innerHTML = '';
+        const msgs = [];
+        let critical = false;
+
+        const cpu = selection.cpu, mb = selection.motherboard, ram = selection.ram,
+            gpu = selection.gpu, psu = selection.psu, cooler = selection.cooler, casep = selection.case;
+
+        // Required components check
+        for (const slot of REQUIRED_SLOTS) {
+            if (!selection[slot]) {
+                msgs.push({ severity: 'error', text: 'Отсутствует обязательный компонент: ' + SLOT_LABELS[slot] + '. Добавьте его в сборку.' });
+                critical = true;
+            }
+        }
+
+        // Socket match
+        if (cpu && mb) {
+            const cpuSocket = cpu.specs_data?.socket || cpu.socket;
+            const mbSocket = mb.specs_data?.socket || mb.socket;
+            if (cpuSocket && mbSocket && cpuSocket !== mbSocket) {
+                msgs.push({ severity: 'error', text: 'Несовместимы: сокет процессора ' + cpuSocket + ' не совпадает с сокетом материнской платы ' + mbSocket + '.' });
+                critical = true;
+            }
+        }
+
+        // RAM speed
+        if (ram && (cpu || mb)) {
+            const ramSpeed = ram.specs_data?.speed_mhz || ram.speed_mhz;
+            const cpuMax = cpu ? (cpu.specs_data?.max_mem_speed || cpu.max_mem_speed || Infinity) : Infinity;
+            const mbMax = mb ? (mb.specs_data?.ram_speed_max || mb.ram_speed_max || Infinity) : Infinity;
+            const allowed = Math.min(cpuMax, mbMax);
+            if (ramSpeed && ramSpeed > allowed) {
+                msgs.push({ severity: 'warning', text: 'Потенциальная несовместимость: частота RAM ' + ramSpeed + ' МГц может превышать поддерживаемую (' + allowed + ' МГц).' });
+            }
+        }
+
+        // PSU wattage
+        if (psu && (cpu || gpu || selection.storage)) {
+            var cpuPw = cpu ? (cpu.specs_data?.tdp_w || cpu.tdp_w || 0) : 0;
+            var gpuPw = gpu ? (gpu.specs_data?.power_draw_w || gpu.power_draw_w || 0) : 0;
+            var stPw = selection.storage ? (selection.storage.specs_data?.power_draw_w || selection.storage.power_draw_w || 0) : 0;
+            var sum = cpuPw + gpuPw + stPw;
+            var required = Math.ceil(sum * 1.25);
+            var psuWatts = psu.specs_data?.power_w || psu.power_w || 0;
+            if (psuWatts < required) {
+                msgs.push({ severity: 'error', text: 'Мощность БП недостаточна: требуется ≈ ' + required + ' Вт, выбранный БП — ' + psuWatts + ' Вт.' });
+                critical = true;
+            }
+        }
+
+        // Cooler height vs case
+        if (cooler && casep) {
+            var coolerH = cooler.specs_data?.cooler_height_mm || cooler.cooler_height_mm;
+            var caseMax = casep.specs_data?.max_cooler_height_mm || casep.max_cooler_height_mm;
+            if (coolerH && caseMax && coolerH > caseMax) {
+                msgs.push({ severity: 'error', text: 'Кулер (' + coolerH + ' мм) не поместится в корпус (макс ' + caseMax + ' мм).' });
+                critical = true;
+            }
+        }
+
+        // GPU length vs case
+        if (gpu && casep) {
+            var gpuLen = gpu.specs_data?.length_mm || gpu.length_mm;
+            var caseGpu = casep.specs_data?.max_gpu_length_mm || casep.max_gpu_length_mm;
+            if (gpuLen && caseGpu && gpuLen > caseGpu) {
+                msgs.push({ severity: 'error', text: 'Видеокарта (' + gpuLen + ' мм) не поместится в корпус (макс ' + caseGpu + ' мм).' });
+                critical = true;
+            }
+        }
+
+        // Motherboard form factor vs case supported form factors
+        if (mb && casep) {
+            var mbFF = mb.specs_data?.form_factor || mb.form_factor;
+            var caseFF = casep.specs_data?.form_factor || casep.form_factor;
+            if (mbFF && caseFF) {
+                var caseFFs;
+                if (typeof caseFF === 'string') {
+                    try { caseFFs = JSON.parse(caseFF); } catch(e) { caseFFs = [caseFF]; }
+                } else {
+                    caseFFs = caseFF;
+                }
+                if (Array.isArray(caseFFs)) {
+                    var ffMap = { 'Micro-ATX': ['Micro-ATX', 'mATX', 'micro-atx', 'matx'], 'Mini-ITX': ['Mini-ITX', 'ITX', 'mini-itx', 'itx'], 'ATX': ['ATX', 'atx'], 'E-ATX': ['E-ATX', 'EATX', 'e-atx', 'eatx'] };
+                    var normalizeFF = function(ff) {
+                        for (var key in ffMap) { if (ffMap[key].indexOf(ff) !== -1) return key; }
+                        return ff;
+                    };
+                    var mbNorm = normalizeFF(mbFF);
+                    var caseFlatNorm = caseFFs.map(normalizeFF);
+                    if (caseFlatNorm.indexOf(mbNorm) === -1) {
+                        msgs.push({ severity: 'error', text: 'Материнская плата (' + mbFF + ') не подходит к корпусу. Корпус поддерживает: ' + caseFFs.join(', ') + '.' });
+                        critical = true;
+                    }
+                }
+            }
+        }
+
+        // RAM capacity vs motherboard max RAM
+        if (ram && mb) {
+            var ramSize = ram.specs_data?.size_gb || ram.size_gb;
+            var mbMaxRam = mb.specs_data?.max_ram || mb.max_ram;
+            if (ramSize && mbMaxRam && ramSize > mbMaxRam) {
+                msgs.push({ severity: 'error', text: 'Объём RAM (' + ramSize + ' ГБ) превышает максимум материнской платы (' + mbMaxRam + ' ГБ).' });
+                critical = true;
+            }
+        }
+
+        // NVMe storage needs M.2 slot on motherboard
+        if (selection.storage && mb) {
+            var storageInterface = selection.storage.specs_data?.interface_type || selection.storage.interface_type;
+            var mbM2 = mb.specs_data?.m2_slots || mb.m2_slots || 0;
+            if (storageInterface && storageInterface.toLowerCase().indexOf('nvme') !== -1 && mbM2 < 1) {
+                msgs.push({ severity: 'error', text: 'Накопитель NVMe требует M.2 слот, но материнская плата не имеет M.2 слотов.' });
+                critical = true;
+            }
+        }
+
+        // No GPU + no integrated graphics = no video output
+        if (!gpu && cpu) {
+            var iGpu = cpu.specs_data?.integrated_graphics || cpu.integrated_graphics;
+            if (!iGpu || iGpu === 'false' || iGpu === false) {
+                msgs.push({ severity: 'warning', text: 'Видеокарта не выбрана, а процессор не имеет встроенной графики. Изображение на экран выводиться не будет.' });
+            }
+        }
+
+        if (msgs.length === 0) {
+            var div0 = document.createElement('div'); div0.className = 'ok'; div0.textContent = 'Проблем совместимости не обнаружено.';
+            warningsBlock.appendChild(div0);
+        } else {
+            msgs.forEach(function(m) {
+                var d = document.createElement('div'); d.className = (m.severity === 'error' ? 'err' : 'warn'); d.textContent = m.text;
+                warningsBlock.appendChild(d);
+            });
+        }
+
+        var addBtn = document.getElementById('export-build');
+        if (addBtn) { addBtn.disabled = critical; addBtn.style.opacity = critical ? 0.5 : 1; }
+    }
+
+    // ========== Category collapse ==========
+    document.querySelectorAll('.category-header').forEach(function(h) {
+        h.addEventListener('click', function() {
+            var cat = h.parentElement;
+            cat.classList.toggle('collapsed');
+            var body = cat.querySelector('.category-body');
+            body.style.display = cat.classList.contains('collapsed') ? 'none' : 'block';
+        });
+    });
+
+    // ========== Clear buttons ==========
+    document.querySelectorAll('[data-slot-clear]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            selection[btn.dataset.slotClear] = null;
+            updateBriefsAndTotal();
+        });
+    });
+
+    // ========== Catalog Modal ==========
+    var currentSlot = null;
+    var currentPage = 1;
+    var lastPage = 1;
+
+    function openCatalogModal(slot) {
+        currentSlot = slot;
+        currentPage = 1;
+        document.getElementById('modal-title').textContent = 'Выберите: ' + (SLOT_LABELS[slot] || slot);
+        document.getElementById('modal-search').value = '';
+        document.getElementById('modal-sort').value = 'name';
+        document.getElementById('modal-instock').checked = false;
+        loadProducts();
+        document.getElementById('catalog-modal').style.display = 'flex';
+    }
+
+    function closeCatalogModal() {
+        document.getElementById('catalog-modal').style.display = 'none';
+        currentSlot = null;
+    }
+
+    async function loadProducts() {
+        var search = document.getElementById('modal-search').value;
+        var sort = document.getElementById('modal-sort').value;
+        var inStock = document.getElementById('modal-instock').checked;
+
+        var params = new URLSearchParams({ page: currentPage, sort: sort });
+        if (search) params.set('search', search);
+        if (inStock) params.set('in_stock', '1');
+
+        var res = await fetch('/api/products/' + currentSlot + '?' + params);
+        var data = await res.json();
+
+        lastPage = data.last_page;
+        renderProductList(data.data);
+        document.getElementById('modal-pager-info').textContent = 'Страница ' + data.current_page + ' из ' + data.last_page + ' (' + data.total + ' товаров)';
+        document.getElementById('modal-prev').disabled = data.current_page <= 1;
+        document.getElementById('modal-next').disabled = data.current_page >= data.last_page;
+    }
+
+    function renderProductList(products) {
+        var list = document.getElementById('modal-list');
+        list.innerHTML = '';
+        if (!products.length) {
+            list.innerHTML = '<div style="padding:20px;text-align:center;color:#888;">Ничего не найдено</div>';
+            return;
+        }
+        products.forEach(function(p) {
+            var row = document.createElement('div');
+            row.className = 'cat-item';
+            var adminBtns = '';
+            if (isPrivileged()) {
+                adminBtns =
+                    '<button class="btn-edit-sm" data-edit-product="' + esc(p.product_id) + '">Редактировать</button>' +
+                    '<button class="btn-del-sm" data-del-product="' + esc(p.product_id) + '">Удалить</button>';
+            }
+            row.innerHTML =
+                '<div class="cat-left">' +
+                    '<div class="cat-thumb">' + (p.main_image_path ? '<img src="' + esc(p.main_image_path) + '" alt="">' : '📦') + '</div>' +
+                    '<div class="cat-info">' +
+                        '<div class="cat-title">' + esc(p.name) + '</div>' +
+                        '<div class="cat-desc">' + esc(p.description || '') + '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="cat-right">' +
+                    '<div style="font-weight:700;">' + formatPrice(p.price) + '</div>' +
+                    '<div style="font-size:13px;color:' + (p.stock_quantity > 0 ? '#4caf50' : '#d9534f') + ';">' + (p.stock_quantity > 0 ? 'В наличии: ' + p.stock_quantity : 'Нет в наличии') + '</div>' +
+                    '<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">' +
+                        '<button class="btn-primary" data-select-product="' + esc(p.product_id) + '">Выбрать</button>' +
+                        adminBtns +
+                    '</div>' +
+                '</div>';
+            row.querySelector('[data-select-product]').addEventListener('click', function(e) {
+                e.stopPropagation();
+                selection[currentSlot] = p;
+                updateBriefsAndTotal();
+                closeCatalogModal();
+            });
+            var editBtn = row.querySelector('[data-edit-product]');
+            if (editBtn) {
+                editBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    openProductEditor('edit', currentSlot, p);
+                });
+            }
+            var delBtn = row.querySelector('[data-del-product]');
+            if (delBtn) {
+                delBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    deleteProduct(p.product_id, p.name);
+                });
+            }
+            row.addEventListener('click', function() { showProductDetail(p.product_id); });
+            list.appendChild(row);
+        });
+    }
+
+    // Product detail
+    async function showProductDetail(productId) {
+        var res = await fetch('/api/product/' + productId);
+        var p = await res.json();
+        var card = document.getElementById('product-card-content');
+        var specs = p.specs_data || {};
+
+        var specsHtml = '';
+        for (var k in specs) {
+            if (k === 'product_id' || specs[k] === null || specs[k] === undefined) continue;
+            specsHtml += '<div class="spec-item"><span>' + esc(k) + '</span><span>' + esc(String(specs[k])) + '</span></div>';
+        }
+
+        var adminActions = '';
+        if (isPrivileged()) {
+            adminActions =
+                '<button class="btn-edit-sm" id="product-edit-btn">Редактировать</button>' +
+                '<button class="btn-del-sm" id="product-del-btn">Удалить</button>';
+        }
+
+        card.innerHTML =
+            '<button class="btn-flat" style="position:absolute;top:12px;right:12px;" id="product-modal-close">✕</button>' +
+            '<h3 class="product-title">' + esc(p.name) + '</h3>' +
+            '<div class="product-meta-block">' +
+                '<div class="product-price">' + formatPrice(p.price) + '</div>' +
+                '<div class="product-stock" style="color:' + (p.stock_quantity > 0 ? '#4caf50' : '#d9534f') + ';">' +
+                    (p.stock_quantity > 0 ? 'В наличии: ' + p.stock_quantity : 'Нет в наличии') +
+                '</div>' +
+            '</div>' +
+            (p.description ? '<div class="product-desc">' + esc(p.description) + '</div>' : '') +
+            (specsHtml ? '<div class="specs-grid">' + specsHtml + '</div>' : '') +
+            '<div class="product-actions">' +
+                (currentSlot ? '<button class="btn-primary" id="product-select-btn">Выбрать</button>' : '') +
+                adminActions +
+                '<button class="btn-ghost" id="product-back-btn">Назад</button>' +
+            '</div>';
+
+        document.getElementById('product-modal-close').addEventListener('click', function() {
+            document.getElementById('product-modal').style.display = 'none';
+        });
+        document.getElementById('product-back-btn').addEventListener('click', function() {
+            document.getElementById('product-modal').style.display = 'none';
+        });
+        var selectBtn = document.getElementById('product-select-btn');
+        if (selectBtn) {
+            selectBtn.addEventListener('click', function() {
+                selection[currentSlot] = p;
+                updateBriefsAndTotal();
+                document.getElementById('product-modal').style.display = 'none';
+                closeCatalogModal();
+            });
+        }
+        var pEditBtn = document.getElementById('product-edit-btn');
+        if (pEditBtn) {
+            pEditBtn.addEventListener('click', function() {
+                document.getElementById('product-modal').style.display = 'none';
+                openProductEditor('edit', currentSlot || p.category_id, p);
+            });
+        }
+        var pDelBtn = document.getElementById('product-del-btn');
+        if (pDelBtn) {
+            pDelBtn.addEventListener('click', function() {
+                document.getElementById('product-modal').style.display = 'none';
+                deleteProduct(p.product_id, p.name);
+            });
+        }
+
+        document.getElementById('product-modal').style.display = 'flex';
+    }
+
+    // Modal events
+    document.getElementById('modal-close').addEventListener('click', closeCatalogModal);
+    document.getElementById('catalog-modal').addEventListener('click', function(e) { if (e.target === e.currentTarget) closeCatalogModal(); });
+    document.getElementById('product-modal').addEventListener('click', function(e) { if (e.target === e.currentTarget) e.currentTarget.style.display = 'none'; });
+
+    document.getElementById('modal-search').addEventListener('input', debounce(function() { currentPage = 1; loadProducts(); }, 300));
+    document.getElementById('modal-sort').addEventListener('change', function() { currentPage = 1; loadProducts(); });
+    document.getElementById('modal-instock').addEventListener('change', function() { currentPage = 1; loadProducts(); });
+    document.getElementById('modal-prev').addEventListener('click', function() { if (currentPage > 1) { currentPage--; loadProducts(); } });
+    document.getElementById('modal-next').addEventListener('click', function() { if (currentPage < lastPage) { currentPage++; loadProducts(); } });
+
+    // Slot open buttons
+    document.querySelectorAll('[data-slot-open]').forEach(function(btn) {
+        btn.addEventListener('click', function() { openCatalogModal(btn.dataset.slotOpen); });
+    });
+
+    // ========== Export Build ==========
+    document.getElementById('export-build').addEventListener('click', function() {
+        var items = [];
+        for (var slot in selection) {
+            var prod = selection[slot];
+            if (prod) items.push({ slot: slot, product_id: prod.product_id, name: prod.name, quantity: 1, unit_price: prod.price || 0 });
+        }
+        if (!items.length) { showNotification('warning', 'Не выбран ни один компонент.'); return; }
+
+        var payload = {
+            build_id: 'build-' + Date.now(),
+            created_at: new Date().toISOString(),
+            items: items,
+            total_price: items.reduce(function(s, i) { return s + i.unit_price; }, 0)
+        };
+        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = 'build-' + Date.now() + '.json';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showNotification('success', 'Сборка экспортирована в JSON-файл.');
+    });
+
+    // ========== Templates ==========
+    async function loadTemplates() {
+        var container = document.getElementById('templates-list');
+        if (!container) return;
+
+        var res = await fetch('/api/templates');
+        var templates = await res.json();
+        container.innerHTML = '';
+
+        if (!templates.length) {
+            container.innerHTML = '<div style="color:#999;font-size:13px;">Нет доступных конфигураций</div>';
+        } else {
+            templates.forEach(function(t) {
+                var el = document.createElement('div');
+                el.className = 'template-item';
+                var btnsHtml = '<div style="display:flex;gap:4px;align-items:center;">' +
+                    '<button data-template-id="' + esc(t.template_id) + '">Применить</button>';
+                if (isPrivileged()) {
+                    btnsHtml += '<button class="btn-tpl-del" data-tpl-del="' + esc(t.template_id) + '">✕</button>';
+                }
+                btnsHtml += '</div>';
+                el.innerHTML = '<div class="meta">' + esc(t.name) + '</div>' + btnsHtml;
+                el.querySelector('[data-template-id]').addEventListener('click', function() { applyTemplate(t); });
+                var delBtn = el.querySelector('[data-tpl-del]');
+                if (delBtn) {
+                    delBtn.addEventListener('click', function() { deleteTemplate(t.template_id, t.name); });
+                }
+                container.appendChild(el);
+            });
+        }
+
+        // Add "create template" button for privileged users
+        if (isPrivileged()) {
+            var existing = container.parentElement.querySelector('.btn-tpl-add');
+            if (!existing) {
+                var addBtn = document.createElement('button');
+                addBtn.className = 'btn-tpl-add';
+                addBtn.textContent = '+ Создать конфигурацию';
+                addBtn.addEventListener('click', openTemplateEditor);
+                container.parentElement.appendChild(addBtn);
+            }
+        }
+    }
+
+    function applyTemplate(template) {
+        var items = template.items;
+        for (var slot in selection) { selection[slot] = null; }
+        for (var slot in items) {
+            var info = items[slot];
+            if (info && info.product_id) {
+                selection[slot] = { product_id: info.product_id, name: info.name, price: info.price };
+            }
+        }
+        updateBriefsAndTotal();
+        showNotification('info', 'Шаблон «' + template.name + '» применён.');
+    }
+
+    async function deleteTemplate(templateId, name) {
+        var ok = await showConfirm('Удалить конфигурацию', 'Удалить «' + name + '»?');
+        if (!ok) return;
+        var res = await fetch('/api/templates/' + templateId, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': CSRF },
+        });
+        if (res.ok) {
+            showNotification('success', 'Конфигурация удалена.');
+            loadTemplates();
+        } else {
+            showNotification('error', 'Ошибка при удалении конфигурации.');
+        }
+    }
+
+    // ========== Template Editor ==========
+    function openTemplateEditor() {
+        document.getElementById('tpl-editor-name').value = '';
+        document.getElementById('tpl-editor-public').checked = true;
+        var itemsDiv = document.getElementById('tpl-editor-items');
+        itemsDiv.innerHTML = '';
+        var hasItems = false;
+        for (var slot in selection) {
+            if (selection[slot]) {
+                hasItems = true;
+                var d = document.createElement('div');
+                d.textContent = SLOT_LABELS[slot] + ': ' + selection[slot].name;
+                d.style.padding = '4px 0';
+                itemsDiv.appendChild(d);
+            }
+        }
+        if (!hasItems) {
+            itemsDiv.innerHTML = '<div style="color:#d9534f;">Сборка пуста. Добавьте компоненты перед сохранением.</div>';
+        }
+        document.getElementById('template-editor-modal').style.display = 'flex';
+    }
+
+    document.getElementById('tpl-editor-close').addEventListener('click', function() {
+        document.getElementById('template-editor-modal').style.display = 'none';
+    });
+    document.getElementById('tpl-editor-cancel').addEventListener('click', function() {
+        document.getElementById('template-editor-modal').style.display = 'none';
+    });
+    document.getElementById('template-editor-modal').addEventListener('click', function(e) {
+        if (e.target === e.currentTarget) e.currentTarget.style.display = 'none';
+    });
+    document.getElementById('tpl-editor-save').addEventListener('click', async function() {
+        var name = document.getElementById('tpl-editor-name').value.trim();
+        if (!name) { showNotification('warning', 'Введите название конфигурации.'); return; }
+        var items = [];
+        for (var slot in selection) {
+            if (selection[slot]) {
+                items.push({ slot_type: slot, product_id: selection[slot].product_id });
+            }
+        }
+        if (!items.length) { showNotification('warning', 'Сборка пуста.'); return; }
+        var res = await fetch('/api/templates', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            body: JSON.stringify({ name: name, items: items, is_public: document.getElementById('tpl-editor-public').checked }),
+        });
+        if (res.ok) {
+            showNotification('success', 'Конфигурация «' + name + '» создана.');
+            document.getElementById('template-editor-modal').style.display = 'none';
+            loadTemplates();
+        } else {
+            var err = await res.json().catch(function() { return {}; });
+            showNotification('error', err.message || 'Ошибка при сохранении.');
+        }
+    });
+
+    loadTemplates();
+
+    // ========== Admin: Product CRUD ==========
+    var SPEC_DEFS = {
+        cpu: [
+            { key: 'socket', label: 'Сокет', hint: 'AM4, LGA1700, AM5...', type: 'text' },
+            { key: 'brand', label: 'Бренд', hint: 'AMD, Intel', type: 'text' },
+            { key: 'cores', label: 'Ядра', hint: 'Количество ядер', type: 'number' },
+            { key: 'threads', label: 'Потоки', hint: 'Количество потоков', type: 'number' },
+            { key: 'base_clock', label: 'Базовая частота', hint: 'Например: 3.6 GHz', type: 'text' },
+            { key: 'boost_clock', label: 'Турбо частота', hint: 'Например: 5.0 GHz', type: 'text' },
+            { key: 'tdp_w', label: 'TDP (Вт)', hint: 'Тепловыделение в ваттах', type: 'number' },
+            { key: 'max_mem_speed', label: 'Макс. частота RAM (МГц)', hint: 'Максимальная поддерживаемая частота', type: 'number' },
+            { key: 'integrated_graphics', label: 'Встроенная графика', hint: 'Intel UHD 730 или пусто', type: 'text' },
+            { key: 'lithography_nm', label: 'Техпроцесс (нм)', hint: 'Нанометры, напр. 7', type: 'number' },
+            { key: 'cache_mb', label: 'Кэш (МБ)', hint: 'L3 кэш в мегабайтах', type: 'number' }
+        ],
+        motherboard: [
+            { key: 'socket', label: 'Сокет', hint: 'AM4, LGA1700...', type: 'text' },
+            { key: 'brand', label: 'Бренд', hint: 'ASUS, MSI, Gigabyte...', type: 'text' },
+            { key: 'form_factor', label: 'Форм-фактор', hint: 'ATX, Micro-ATX, Mini-ITX', type: 'text' },
+            { key: 'chipset', label: 'Чипсет', hint: 'B550, Z690, X670E...', type: 'text' },
+            { key: 'ram_slots', label: 'Слоты RAM', hint: 'Количество слотов', type: 'number' },
+            { key: 'max_ram', label: 'Макс. RAM (ГБ)', hint: 'Максимальный объём', type: 'number' },
+            { key: 'ram_speed_max', label: 'Макс. частота RAM (МГц)', hint: 'Максимальная частота', type: 'number' },
+            { key: 'm2_slots', label: 'Слоты M.2', hint: 'Количество M.2 слотов', type: 'number' },
+            { key: 'sata_ports', label: 'Порты SATA', hint: 'Количество портов', type: 'number' },
+            { key: 'pcie_version', label: 'Версия PCIe', hint: '3, 4 или 5', type: 'number' },
+            { key: 'cpu_fan_headers', label: 'Разъёмы CPU fan', hint: 'Количество', type: 'number' }
+        ],
+        ram: [
+            { key: 'ram_type', label: 'Тип памяти', hint: 'DDR4 или DDR5', type: 'text' },
+            { key: 'size_gb', label: 'Объём (ГБ)', hint: 'Общий объём набора', type: 'number' },
+            { key: 'speed_mhz', label: 'Частота (МГц)', hint: 'Скорость памяти', type: 'number' }
+        ],
+        gpu: [
+            { key: 'power_draw_w', label: 'Энергопотребление (Вт)', hint: 'TDP видеокарты', type: 'number' },
+            { key: 'length_mm', label: 'Длина (мм)', hint: 'Длина карты в мм', type: 'number' }
+        ],
+        storage: [
+            { key: 'interface_type', label: 'Интерфейс', hint: 'NVMe, SATA, USB', type: 'text' },
+            { key: 'capacity_gb', label: 'Объём (ГБ)', hint: 'Ёмкость накопителя', type: 'number' },
+            { key: 'pcie_version', label: 'Версия PCIe', hint: 'Для NVMe: 3 или 4', type: 'number' },
+            { key: 'power_draw_w', label: 'Энергопотребление (Вт)', hint: 'Потребляемая мощность', type: 'number' }
+        ],
+        psu: [
+            { key: 'power_w', label: 'Мощность (Вт)', hint: 'Мощность блока питания', type: 'number' }
+        ],
+        cooler: [
+            { key: 'cooler_height_mm', label: 'Высота кулера (мм)', hint: 'Для башенных кулеров', type: 'number' },
+            { key: 'radiator_size_mm', label: 'Размер радиатора (мм)', hint: 'Для СЖО: 120, 240, 360...', type: 'number' },
+            { key: 'connector_pin_count', label: 'Разъём (pin)', hint: '3 или 4 pin', type: 'number' }
+        ],
+        case: [
+            { key: 'form_factor', label: 'Поддерживаемые форм-факторы', hint: 'JSON массив: ["ATX","Micro-ATX"]', type: 'text' },
+            { key: 'max_gpu_length_mm', label: 'Макс. длина GPU (мм)', hint: 'Максимальная длина видеокарты', type: 'number' },
+            { key: 'max_cooler_height_mm', label: 'Макс. высота кулера (мм)', hint: 'Максимальная высота кулера', type: 'number' },
+            { key: 'm2_slots', label: 'Слоты M.2', hint: 'Количество M.2 в корпусе', type: 'number' },
+            { key: 'drive_bays', label: 'Отсеки для дисков', hint: 'Количество 2.5"/3.5"', type: 'number' },
+            { key: 'front_usb_c', label: 'Передний USB-C', hint: '1 = есть, 0 = нет', type: 'number' },
+            { key: 'audio_header', label: 'Аудио-разъём', hint: '1 = есть, 0 = нет', type: 'number' }
+        ]
+    };
+
+    function isPrivileged() {
+        return AUTH && ['admin', 'content_manager', 'warehouse_manager'].indexOf(AUTH.role) !== -1;
+    }
+
+    var editorMode = null; // 'add' or 'edit'
+    var editorProductId = null;
+
+    function openProductEditor(mode, slot, product) {
+        editorMode = mode;
+        var editorSlot = slot || currentSlot;
+        document.getElementById('editor-title').textContent = mode === 'add' ? 'Добавить товар' : 'Редактировать товар';
+        document.getElementById('editor-category').textContent = SLOT_LABELS[editorSlot] || editorSlot;
+        document.getElementById('editor-category').dataset.slot = editorSlot;
+
+        var pidInput = document.getElementById('editor-pid');
+        var nameInput = document.getElementById('editor-name');
+        var priceInput = document.getElementById('editor-price');
+        var stockInput = document.getElementById('editor-stock');
+        var descInput = document.getElementById('editor-desc');
+        var imgInput = document.getElementById('editor-image-path');
+
+        if (mode === 'edit' && product) {
+            editorProductId = product.product_id;
+            pidInput.value = product.product_id;
+            pidInput.readOnly = true;
+            nameInput.value = product.name || '';
+            priceInput.value = product.price || 0;
+            stockInput.value = product.stock_quantity || 0;
+            descInput.value = product.description || '';
+            imgInput.value = product.main_image_path || '';
+        } else {
+            editorProductId = null;
+            pidInput.value = '';
+            pidInput.readOnly = false;
+            nameInput.value = '';
+            priceInput.value = '';
+            stockInput.value = 0;
+            descInput.value = '';
+            imgInput.value = '';
+        }
+
+        // Render image preview
+        renderEditorImage(mode === 'edit' && product ? product.main_image_path : '');
+
+        // Render specs
+        renderEditorSpecs(editorSlot, mode === 'edit' && product ? product.specs_data : null);
+
+        document.getElementById('product-editor-modal').style.display = 'flex';
+    }
+
+    function renderEditorImage(path) {
+        var preview = document.getElementById('editor-image-preview');
+        if (path) {
+            preview.innerHTML = '<img src="' + esc(path) + '" alt="Preview">';
+        } else {
+            preview.innerHTML = '<span style="color:#999;">Нет изображения</span>';
+        }
+    }
+
+    document.getElementById('editor-image-path').addEventListener('input', function() {
+        renderEditorImage(this.value);
+    });
+
+    function renderEditorSpecs(slot, existingSpecs) {
+        var container = document.getElementById('editor-specs-list');
+        container.innerHTML = '';
+        var defs = SPEC_DEFS[slot] || [];
+        if (!defs.length) {
+            container.innerHTML = '<div style="color:#999;font-size:13px;">Нет характеристик для данной категории.</div>';
+            return;
+        }
+        defs.forEach(function(def) {
+            var row = document.createElement('div');
+            row.className = 'spec-editor-row';
+            var val = '';
+            if (existingSpecs && existingSpecs[def.key] !== null && existingSpecs[def.key] !== undefined) {
+                val = String(existingSpecs[def.key]);
+            }
+            row.innerHTML =
+                '<div>' +
+                    '<div class="spec-label">' + esc(def.label) + '</div>' +
+                    '<div class="spec-hint">' + esc(def.hint) + '</div>' +
+                '</div>' +
+                '<div>' +
+                    '<input data-spec-key="' + esc(def.key) + '" type="' + (def.type || 'text') + '" value="' + esc(val) + '" placeholder="—">' +
+                '</div>';
+            container.appendChild(row);
+        });
+    }
+
+    function closeProductEditor() {
+        document.getElementById('product-editor-modal').style.display = 'none';
+    }
+
+    document.getElementById('editor-close').addEventListener('click', closeProductEditor);
+    document.getElementById('editor-cancel').addEventListener('click', closeProductEditor);
+    document.getElementById('product-editor-modal').addEventListener('click', function(e) {
+        if (e.target === e.currentTarget) closeProductEditor();
+    });
+
+    document.getElementById('editor-save').addEventListener('click', async function() {
+        var slot = document.getElementById('editor-category').dataset.slot;
+        var pid = document.getElementById('editor-pid').value.trim();
+        var name = document.getElementById('editor-name').value.trim();
+        var price = parseInt(document.getElementById('editor-price').value) || 0;
+        var stock = parseInt(document.getElementById('editor-stock').value) || 0;
+        var desc = document.getElementById('editor-desc').value.trim();
+        var imgPath = document.getElementById('editor-image-path').value.trim();
+
+        if (!name) { showNotification('warning', 'Введите название товара.'); return; }
+        if (!pid && editorMode === 'add') { showNotification('warning', 'Введите артикул товара.'); return; }
+
+        // Gather specs
+        var specs = {};
+        document.querySelectorAll('#editor-specs-list [data-spec-key]').forEach(function(input) {
+            var v = input.value.trim();
+            if (v !== '') {
+                specs[input.dataset.specKey] = input.type === 'number' ? (parseFloat(v) || 0) : v;
+            }
+        });
+
+        var body = {
+            name: name,
+            price: price,
+            stock_quantity: stock,
+            description: desc,
+            main_image_path: imgPath,
+            specs: specs
+        };
+
+        var url, method;
+        if (editorMode === 'add') {
+            body.product_id = pid;
+            body.category_id = slot;
+            url = '/api/products';
+            method = 'POST';
+        } else {
+            url = '/api/product/' + editorProductId;
+            method = 'PUT';
+        }
+
+        var res = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+            showNotification('success', editorMode === 'add' ? 'Товар добавлен.' : 'Товар обновлён.');
+            closeProductEditor();
+            loadProducts();
+        } else {
+            var err = await res.json().catch(function() { return {}; });
+            var msg = '';
+            if (err.errors) {
+                for (var field in err.errors) { msg += err.errors[field].join(', ') + ' '; }
+            } else {
+                msg = err.message || 'Ошибка при сохранении.';
+            }
+            showNotification('error', msg);
+        }
+    });
+
+    async function deleteProduct(productId, productName) {
+        var ok = await showConfirm('Удалить товар', 'Удалить «' + productName + '»? Это действие необратимо.');
+        if (!ok) return;
+        var res = await fetch('/api/product/' + productId, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': CSRF }
+        });
+        if (res.ok) {
+            showNotification('success', 'Товар удалён.');
+            loadProducts();
+        } else {
+            showNotification('error', 'Ошибка при удалении товара.');
+        }
+    }
+
+    // Admin "Add product" button in catalog modal header
+    var addProductBtn = document.getElementById('catalog-add-product');
+    if (addProductBtn) {
+        addProductBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (currentSlot) openProductEditor('add', currentSlot, null);
+        });
+    }
+
+    // ========== Account popup ==========
+    var nameBtn = document.getElementById('account-name-btn');
+    var popup = document.getElementById('account-popup');
+    if (nameBtn && popup) {
+        nameBtn.addEventListener('click', function() { popup.classList.toggle('open'); });
+        document.addEventListener('click', function(e) {
+            if (!nameBtn.contains(e.target) && !popup.contains(e.target)) popup.classList.remove('open');
+        });
+    }
+
+    // ========== Init ==========
+    updateBriefsAndTotal();
+
+    // ========== Helpers ==========
+    function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function debounce(fn, ms) { var t; return function() { var a = arguments; clearTimeout(t); t = setTimeout(function() { fn.apply(null, a); }, ms); }; }
+})();

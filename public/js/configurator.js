@@ -1,0 +1,1356 @@
+﻿/**
+ * Configurator main JS — full rewrite v2
+ * Multi-slot, image upload, template detail, compatibility highlighting,
+ * slot counter, delete empty slots, Russian specs, compatible-only toggle, spec filters
+ */
+(function () {
+    'use strict';
+
+    const CSRF = window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content;
+    const AUTH = window.AUTH_USER;
+
+    // Notification / Confirm
+    function showNotification(type, message, duration) {
+        duration = duration || 4000;
+        const container = document.getElementById('notify-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = 'notify-toast ' + type;
+        toast.innerHTML = '<span>' + esc(message) + '</span><button class="notify-close">&times;</button>';
+        container.appendChild(toast);
+        const close = () => {
+            toast.style.animation = 'notifyOut .3s ease forwards';
+            setTimeout(() => toast.remove(), 300);
+        };
+        toast.querySelector('.notify-close').addEventListener('click', close);
+        setTimeout(close, duration);
+    }
+
+    function showConfirm(title, text) {
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.className = 'confirm-overlay';
+            overlay.innerHTML =
+                '<div class="confirm-card">' +
+                    '<div class="confirm-title">' + esc(title) + '</div>' +
+                    '<div class="confirm-text">' + esc(text) + '</div>' +
+                    '<div class="confirm-actions">' +
+                        '<button class="btn-confirm-yes">\u0414\u0430</button>' +
+                        '<button class="btn-confirm-no">\u041e\u0442\u043c\u0435\u043d\u0430</button>' +
+                    '</div>' +
+                '</div>';
+            document.body.appendChild(overlay);
+            overlay.querySelector('.btn-confirm-yes').addEventListener('click', () => { overlay.remove(); resolve(true); });
+            overlay.querySelector('.btn-confirm-no').addEventListener('click', () => { overlay.remove(); resolve(false); });
+            overlay.addEventListener('click', e => { if (e.target === overlay) { overlay.remove(); resolve(false); } });
+        });
+    }
+
+    // Constants
+    const SLOT_LABELS = {
+        cpu: '\u041f\u0440\u043e\u0446\u0435\u0441\u0441\u043e\u0440',
+        motherboard: '\u041c\u0430\u0442\u0435\u0440\u0438\u043d\u0441\u043a\u0430\u044f \u043f\u043b\u0430\u0442\u0430',
+        ram: '\u041e\u043f\u0435\u0440\u0430\u0442\u0438\u0432\u043d\u0430\u044f \u043f\u0430\u043c\u044f\u0442\u044c',
+        gpu: '\u0412\u0438\u0434\u0435\u043e\u043a\u0430\u0440\u0442\u0430',
+        storage: '\u041d\u0430\u043a\u043e\u043f\u0438\u0442\u0435\u043b\u044c',
+        psu: '\u0411\u043b\u043e\u043a \u043f\u0438\u0442\u0430\u043d\u0438\u044f',
+        cooler: '\u041a\u0443\u043b\u0435\u0440',
+        case: '\u041a\u043e\u0440\u043f\u0443\u0441'
+    };
+    const REQUIRED_SLOTS = ['cpu', 'motherboard', 'ram', 'psu', 'case'];
+    const DEFAULT_MAX_SLOTS = { cpu: 1, motherboard: 1, ram: 4, gpu: 1, storage: 4, psu: 1, cooler: 1, case: 1 };
+
+    // SPEC_DEFS
+    var SPEC_DEFS = {
+        cpu: [
+            { key: 'socket', label: '\u0421\u043e\u043a\u0435\u0442', hint: 'AM4, LGA1700, AM5...' },
+            { key: 'brand', label: '\u0411\u0440\u0435\u043d\u0434', hint: 'AMD, Intel' },
+            { key: 'cores', label: '\u042f\u0434\u0440\u0430', hint: '\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u044f\u0434\u0435\u0440' },
+            { key: 'threads', label: '\u041f\u043e\u0442\u043e\u043a\u0438', hint: '\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043f\u043e\u0442\u043e\u043a\u043e\u0432' },
+            { key: 'base_clock', label: '\u0411\u0430\u0437\u043e\u0432\u0430\u044f \u0447\u0430\u0441\u0442\u043e\u0442\u0430', hint: '\u041d\u0430\u043f\u0440\u0438\u043c\u0435\u0440: 3.6 GHz' },
+            { key: 'boost_clock', label: '\u0422\u0443\u0440\u0431\u043e \u0447\u0430\u0441\u0442\u043e\u0442\u0430', hint: '\u041d\u0430\u043f\u0440\u0438\u043c\u0435\u0440: 5.0 GHz' },
+            { key: 'tdp_w', label: 'TDP (\u0412\u0442)', hint: '\u0422\u0435\u043f\u043b\u043e\u0432\u044b\u0434\u0435\u043b\u0435\u043d\u0438\u0435 \u0432 \u0432\u0430\u0442\u0442\u0430\u0445' },
+            { key: 'max_mem_speed', label: '\u041c\u0430\u043a\u0441. \u0447\u0430\u0441\u0442\u043e\u0442\u0430 RAM (\u041c\u0413\u0446)', hint: '\u041c\u0430\u043a\u0441. \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u043c\u0430\u044f \u0447\u0430\u0441\u0442\u043e\u0442\u0430' },
+            { key: 'integrated_graphics', label: '\u0412\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u0430\u044f \u0433\u0440\u0430\u0444\u0438\u043a\u0430', hint: 'Intel UHD 730 \u0438\u043b\u0438 \u043f\u0443\u0441\u0442\u043e' },
+            { key: 'lithography_nm', label: '\u0422\u0435\u0445\u043f\u0440\u043e\u0446\u0435\u0441\u0441 (\u043d\u043c)', hint: '\u041d\u0430\u043d\u043e\u043c\u0435\u0442\u0440\u044b' },
+            { key: 'cache_mb', label: '\u041a\u044d\u0448 (\u041c\u0411)', hint: 'L3 \u043a\u044d\u0448' }
+        ],
+        motherboard: [
+            { key: 'socket', label: '\u0421\u043e\u043a\u0435\u0442', hint: 'AM4, LGA1700...' },
+            { key: 'brand', label: '\u0411\u0440\u0435\u043d\u0434', hint: 'ASUS, MSI, Gigabyte...' },
+            { key: 'form_factor', label: '\u0424\u043e\u0440\u043c-\u0444\u0430\u043a\u0442\u043e\u0440', hint: 'ATX, Micro-ATX, Mini-ITX' },
+            { key: 'chipset', label: '\u0427\u0438\u043f\u0441\u0435\u0442', hint: 'B550, Z690...' },
+            { key: 'ram_slots', label: '\u0421\u043b\u043e\u0442\u044b RAM', hint: '\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e' },
+            { key: 'max_ram', label: '\u041c\u0430\u043a\u0441. RAM (\u0413\u0411)', hint: '\u041c\u0430\u043a\u0441. \u043e\u0431\u044a\u0451\u043c' },
+            { key: 'ram_speed_max', label: '\u041c\u0430\u043a\u0441. \u0447\u0430\u0441\u0442\u043e\u0442\u0430 RAM (\u041c\u0413\u0446)', hint: '\u041c\u0430\u043a\u0441. \u0447\u0430\u0441\u0442\u043e\u0442\u0430' },
+            { key: 'm2_slots', label: '\u0421\u043b\u043e\u0442\u044b M.2', hint: '\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e M.2' },
+            { key: 'sata_ports', label: '\u041f\u043e\u0440\u0442\u044b SATA', hint: '\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e' },
+            { key: 'pcie_version', label: '\u0412\u0435\u0440\u0441\u0438\u044f PCIe', hint: '3, 4 \u0438\u043b\u0438 5' },
+            { key: 'cpu_fan_headers', label: '\u0420\u0430\u0437\u044a\u0451\u043c\u044b CPU fan', hint: '\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e' }
+        ],
+        ram: [
+            { key: 'ram_type', label: '\u0422\u0438\u043f \u043f\u0430\u043c\u044f\u0442\u0438', hint: 'DDR4 / DDR5' },
+            { key: 'size_gb', label: '\u041e\u0431\u044a\u0451\u043c (\u0413\u0411)', hint: '\u041e\u0431\u044a\u0451\u043c \u043f\u043b\u0430\u043d\u043a\u0438' },
+            { key: 'speed_mhz', label: '\u0427\u0430\u0441\u0442\u043e\u0442\u0430 (\u041c\u0413\u0446)', hint: '\u0421\u043a\u043e\u0440\u043e\u0441\u0442\u044c' }
+        ],
+        gpu: [
+            { key: 'power_draw_w', label: '\u042d\u043d\u0435\u0440\u0433\u043e\u043f\u043e\u0442\u0440\u0435\u0431\u043b\u0435\u043d\u0438\u0435 (\u0412\u0442)', hint: 'TDP' },
+            { key: 'length_mm', label: '\u0414\u043b\u0438\u043d\u0430 (\u043c\u043c)', hint: '\u0414\u043b\u0438\u043d\u0430 \u043a\u0430\u0440\u0442\u044b' }
+        ],
+        storage: [
+            { key: 'interface_type', label: '\u0418\u043d\u0442\u0435\u0440\u0444\u0435\u0439\u0441', hint: 'NVMe, SATA, USB' },
+            { key: 'capacity_gb', label: '\u041e\u0431\u044a\u0451\u043c (\u0413\u0411)', hint: '\u0401\u043c\u043a\u043e\u0441\u0442\u044c' },
+            { key: 'pcie_version', label: '\u0412\u0435\u0440\u0441\u0438\u044f PCIe', hint: '\u0414\u043b\u044f NVMe: 3 / 4' },
+            { key: 'power_draw_w', label: '\u042d\u043d\u0435\u0440\u0433\u043e\u043f\u043e\u0442\u0440\u0435\u0431\u043b\u0435\u043d\u0438\u0435 (\u0412\u0442)', hint: '\u041c\u043e\u0449\u043d\u043e\u0441\u0442\u044c' }
+        ],
+        psu: [
+            { key: 'power_w', label: '\u041c\u043e\u0449\u043d\u043e\u0441\u0442\u044c (\u0412\u0442)', hint: '\u041c\u043e\u0449\u043d\u043e\u0441\u0442\u044c \u0411\u041f' }
+        ],
+        cooler: [
+            { key: 'cooler_height_mm', label: '\u0412\u044b\u0441\u043e\u0442\u0430 (\u043c\u043c)', hint: '\u0412\u044b\u0441\u043e\u0442\u0430 \u043a\u0443\u043b\u0435\u0440\u0430' },
+            { key: 'radiator_size_mm', label: '\u0420\u0430\u0434\u0438\u0430\u0442\u043e\u0440 (\u043c\u043c)', hint: '\u0414\u043b\u044f \u0421\u0416\u041e: 120, 240, 360...' },
+            { key: 'connector_pin_count', label: '\u0420\u0430\u0437\u044a\u0451\u043c (pin)', hint: '3 / 4 pin' }
+        ],
+        case: [
+            { key: 'form_factor', label: '\u0424\u043e\u0440\u043c-\u0444\u0430\u043a\u0442\u043e\u0440\u044b', hint: '["ATX","Micro-ATX"]' },
+            { key: 'max_gpu_length_mm', label: '\u041c\u0430\u043a\u0441. \u0434\u043b\u0438\u043d\u0430 GPU (\u043c\u043c)', hint: '\u041c\u0430\u043a\u0441. \u0434\u043b\u0438\u043d\u0430 \u0432\u0438\u0434\u0435\u043e\u043a\u0430\u0440\u0442\u044b' },
+            { key: 'max_cooler_height_mm', label: '\u041c\u0430\u043a\u0441. \u0432\u044b\u0441\u043e\u0442\u0430 \u043a\u0443\u043b\u0435\u0440\u0430 (\u043c\u043c)', hint: '\u041c\u0430\u043a\u0441. \u0432\u044b\u0441\u043e\u0442\u0430' },
+            { key: 'm2_slots', label: '\u0421\u043b\u043e\u0442\u044b M.2', hint: '\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e M.2' },
+            { key: 'drive_bays', label: '\u041e\u0442\u0441\u0435\u043a\u0438 \u0434\u043b\u044f \u0434\u0438\u0441\u043a\u043e\u0432', hint: '2.5"/3.5"' },
+            { key: 'front_usb_c', label: '\u041f\u0435\u0440\u0435\u0434\u043d\u0438\u0439 USB-C', hint: '1 = \u0435\u0441\u0442\u044c, 0 = \u043d\u0435\u0442' },
+            { key: 'audio_header', label: '\u0410\u0443\u0434\u0438\u043e-\u0440\u0430\u0437\u044a\u0451\u043c', hint: '1 = \u0435\u0441\u0442\u044c, 0 = \u043d\u0435\u0442' }
+        ]
+    };
+
+    // Selection state (arrays)
+    const selection = {};
+    for (var _c in SLOT_LABELS) { selection[_c] = [null]; }
+    window.selection = selection;
+
+    function formatPrice(v) { return v ? v.toLocaleString('ru-RU') + ' \u20bd' : '0 \u20bd'; }
+
+    function getFirstSelected(cat) {
+        var items = selection[cat] || [];
+        for (var i = 0; i < items.length; i++) { if (items[i]) return items[i]; }
+        return null;
+    }
+    function getAllSelected(cat) {
+        return (selection[cat] || []).filter(function(i) { return i !== null; });
+    }
+    function countSelected(cat) { return getAllSelected(cat).length; }
+
+    function getMaxSlots(cat) {
+        var mb = getFirstSelected('motherboard');
+        if (cat === 'ram' && mb) {
+            var rs = parseInt(mb.specs_data?.ram_slots || mb.ram_slots || 0);
+            if (rs > 0) return rs;
+        }
+        if (cat === 'storage' && mb) {
+            var m2 = parseInt(mb.specs_data?.m2_slots || mb.m2_slots || 0);
+            var sata = parseInt(mb.specs_data?.sata_ports || mb.sata_ports || 0);
+            if (m2 + sata > 0) return m2 + sata;
+        }
+        return DEFAULT_MAX_SLOTS[cat] || 1;
+    }
+
+    // Slot Rendering
+    function renderAllSlots() {
+        for (var c in SLOT_LABELS) { renderCategorySlots(c); }
+    }
+
+    function renderCategorySlots(category) {
+        var container = document.getElementById('slots-' + category);
+        if (!container) return;
+        container.innerHTML = '';
+        var items = selection[category];
+        var maxSlots = getMaxSlots(category);
+
+        var counter = document.getElementById('slot-counter-' + category);
+        if (counter) {
+            counter.textContent = '(' + items.length + '/' + maxSlots + ')';
+        }
+
+        for (var i = 0; i < items.length; i++) {
+            container.appendChild(createSlotElement(category, i, items[i]));
+        }
+
+        if (items.length < maxSlots && maxSlots > 1 && countSelected(category) > 0) {
+            var addRow = document.createElement('div');
+            addRow.style.cssText = 'padding:6px 12px;text-align:center;';
+            var addBtn = document.createElement('button');
+            addBtn.className = 'slot-btn slot-btn-add';
+            addBtn.style.cssText = 'font-size:12px;padding:4px 10px;';
+            addBtn.textContent = '+ \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0435\u0449\u0451';
+            addBtn.addEventListener('click', (function(cat) {
+                return function() { selection[cat].push(null); renderCategorySlots(cat); };
+            })(category));
+            addRow.appendChild(addBtn);
+            container.appendChild(addRow);
+        }
+    }
+
+    function createSlotElement(category, index, product) {
+        var div = document.createElement('div');
+        div.className = 'slot';
+        div.dataset.category = category;
+        div.dataset.index = index;
+
+        var imgDiv = document.createElement('div');
+        imgDiv.className = 'slot-img';
+        if (product && product.main_image_path) {
+            imgDiv.innerHTML = '<img src="/' + esc(product.main_image_path) + '" alt="">';
+        } else {
+            imgDiv.innerHTML = '<span class="slot-empty-icon">\ud83d\udce6</span>';
+        }
+        div.appendChild(imgDiv);
+
+        var infoDiv = document.createElement('div');
+        infoDiv.className = 'slot-info';
+        if (product) {
+            infoDiv.innerHTML =
+                '<div class="slot-product-name">' + esc(product.name) + '</div>' +
+                '<div class="slot-product-price">' + formatPrice(product.price) + '</div>';
+        } else {
+            infoDiv.innerHTML = '<div class="slot-empty-text">\u041f\u0443\u0441\u0442\u043e</div>';
+        }
+        div.appendChild(infoDiv);
+
+        var actionsDiv = document.createElement('div');
+        actionsDiv.className = 'slot-actions';
+        var selBtn = document.createElement('button');
+        selBtn.className = 'slot-btn slot-btn-add';
+        selBtn.textContent = product ? '\u0417\u0430\u043c\u0435\u043d\u0438\u0442\u044c' : '\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c';
+        selBtn.addEventListener('click', (function(cat, idx) {
+            return function() { openCatalogModal(cat, idx); };
+        })(category, index));
+        actionsDiv.appendChild(selBtn);
+
+        if (product) {
+            var clearBtn = document.createElement('button');
+            clearBtn.className = 'slot-btn slot-btn-clear';
+            clearBtn.textContent = '\u041e\u0447\u0438\u0441\u0442\u0438\u0442\u044c';
+            clearBtn.addEventListener('click', (function(cat, idx) {
+                return function() {
+                    if (idx > 0) { selection[cat].splice(idx, 1); }
+                    else { selection[cat][idx] = null; }
+                    renderCategorySlots(cat);
+                    updateSummary();
+                };
+            })(category, index));
+            actionsDiv.appendChild(clearBtn);
+        } else if (index > 0) {
+            var delSlotBtn = document.createElement('button');
+            delSlotBtn.className = 'slot-btn slot-btn-clear';
+            delSlotBtn.textContent = '\u0423\u0434\u0430\u043b\u0438\u0442\u044c';
+            delSlotBtn.addEventListener('click', (function(cat, idx) {
+                return function() {
+                    selection[cat].splice(idx, 1);
+                    renderCategorySlots(cat);
+                    updateSummary();
+                };
+            })(category, index));
+            actionsDiv.appendChild(delSlotBtn);
+        }
+        div.appendChild(actionsDiv);
+        return div;
+    }
+
+    // Summary & Total
+    function updateSummary() {
+        var total = 0;
+        for (var cat in selection) {
+            var items = selection[cat];
+            for (var i = 0; i < items.length; i++) {
+                if (items[i]) total += (items[i].price || 0);
+            }
+        }
+        document.getElementById('total-price').textContent = formatPrice(total);
+        runCompatibilityChecks();
+    }
+
+    // Compatibility Checks
+    function runCompatibilityChecks() {
+        var wb = document.getElementById('warnings-block');
+        if (!wb) return;
+        wb.innerHTML = '';
+        var msgs = [];
+        var critical = false;
+        var errorSlots = {};
+
+        var cpu = getFirstSelected('cpu');
+        var mb = getFirstSelected('motherboard');
+        var rams = getAllSelected('ram');
+        var ram = rams[0] || null;
+        var gpu = getFirstSelected('gpu');
+        var storages = getAllSelected('storage');
+        var psu = getFirstSelected('psu');
+        var cooler = getFirstSelected('cooler');
+        var casep = getFirstSelected('case');
+
+        for (var ri = 0; ri < REQUIRED_SLOTS.length; ri++) {
+            var rslot = REQUIRED_SLOTS[ri];
+            if (!getFirstSelected(rslot)) {
+                msgs.push({ severity: 'error', text: '\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u044b\u0439 \u043a\u043e\u043c\u043f\u043e\u043d\u0435\u043d\u0442: ' + SLOT_LABELS[rslot] + '.', slots: [rslot] });
+                critical = true;
+            }
+        }
+
+        if (cpu && mb) {
+            var cpuSocket = cpu.specs_data?.socket || cpu.socket;
+            var mbSocket = mb.specs_data?.socket || mb.socket;
+            if (cpuSocket && mbSocket && cpuSocket !== mbSocket) {
+                msgs.push({ severity: 'error', text: '\u0421\u043e\u043a\u0435\u0442 \u043f\u0440\u043e\u0446\u0435\u0441\u0441\u043e\u0440\u0430 ' + cpuSocket + ' \u043d\u0435 \u0441\u043e\u0432\u043f\u0430\u0434\u0430\u0435\u0442 \u0441 \u0441\u043e\u043a\u0435\u0442\u043e\u043c \u043c\u0430\u0442\u0435\u0440\u0438\u043d\u0441\u043a\u043e\u0439 \u043f\u043b\u0430\u0442\u044b ' + mbSocket + '.', slots: ['cpu', 'motherboard'] });
+                critical = true;
+            }
+        }
+
+        if (ram && (cpu || mb)) {
+            var ramSpeed = ram.specs_data?.speed_mhz || ram.speed_mhz;
+            var cpuMax = cpu ? (cpu.specs_data?.max_mem_speed || cpu.max_mem_speed || Infinity) : Infinity;
+            var mbMax = mb ? (mb.specs_data?.ram_speed_max || mb.ram_speed_max || Infinity) : Infinity;
+            var allowed = Math.min(cpuMax, mbMax);
+            if (ramSpeed && ramSpeed > allowed) {
+                msgs.push({ severity: 'warning', text: '\u0427\u0430\u0441\u0442\u043e\u0442\u0430 RAM ' + ramSpeed + ' \u041c\u0413\u0446 \u043c\u043e\u0436\u0435\u0442 \u043f\u0440\u0435\u0432\u044b\u0448\u0430\u0442\u044c \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u043c\u0443\u044e (' + allowed + ' \u041c\u0413\u0446).', slots: ['ram'] });
+            }
+        }
+
+        if (mb && rams.length > 0) {
+            var mbRamSlots = parseInt(mb.specs_data?.ram_slots || mb.ram_slots || 4);
+            if (rams.length > mbRamSlots) {
+                msgs.push({ severity: 'error', text: '\u0412\u044b\u0431\u0440\u0430\u043d\u043e ' + rams.length + ' \u043f\u043b\u0430\u043d\u043e\u043a RAM, \u043d\u043e \u043c\u0430\u0442\u0435\u0440\u0438\u043d\u0441\u043a\u0430\u044f \u043f\u043b\u0430\u0442\u0430 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 \u0442\u043e\u043b\u044c\u043a\u043e ' + mbRamSlots + '.', slots: ['ram', 'motherboard'] });
+                critical = true;
+            }
+        }
+
+        if (mb && rams.length > 0) {
+            var totalRamGb = 0;
+            for (var ri2 = 0; ri2 < rams.length; ri2++) {
+                totalRamGb += parseInt(rams[ri2].specs_data?.size_gb || rams[ri2].size_gb || 0);
+            }
+            var mbMaxRam = parseInt(mb.specs_data?.max_ram || mb.max_ram || 0);
+            if (totalRamGb > 0 && mbMaxRam > 0 && totalRamGb > mbMaxRam) {
+                msgs.push({ severity: 'error', text: '\u041e\u0431\u0449\u0438\u0439 \u043e\u0431\u044a\u0451\u043c RAM (' + totalRamGb + ' \u0413\u0411) \u043f\u0440\u0435\u0432\u044b\u0448\u0430\u0435\u0442 \u043c\u0430\u043a\u0441\u0438\u043c\u0443\u043c \u043c\u0430\u0442\u0435\u0440\u0438\u043d\u0441\u043a\u043e\u0439 \u043f\u043b\u0430\u0442\u044b (' + mbMaxRam + ' \u0413\u0411).', slots: ['ram', 'motherboard'] });
+                critical = true;
+            }
+        }
+
+        if (psu) {
+            var cpuPw = cpu ? parseInt(cpu.specs_data?.tdp_w || cpu.tdp_w || 0) : 0;
+            var gpuPw = gpu ? parseInt(gpu.specs_data?.power_draw_w || gpu.power_draw_w || 0) : 0;
+            var stPw = 0;
+            for (var si = 0; si < storages.length; si++) {
+                stPw += parseInt(storages[si].specs_data?.power_draw_w || storages[si].power_draw_w || 0);
+            }
+            var sumPw = cpuPw + gpuPw + stPw;
+            var requiredPw = Math.ceil(sumPw * 1.25);
+            var psuWatts = parseInt(psu.specs_data?.power_w || psu.power_w || 0);
+            if (psuWatts > 0 && psuWatts < requiredPw) {
+                msgs.push({ severity: 'error', text: '\u041c\u043e\u0449\u043d\u043e\u0441\u0442\u044c \u0411\u041f \u043d\u0435\u0434\u043e\u0441\u0442\u0430\u0442\u043e\u0447\u043d\u0430: \u0442\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044f \u2248 ' + requiredPw + ' \u0412\u0442, \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u044b\u0439 \u0411\u041f \u2014 ' + psuWatts + ' \u0412\u0442.', slots: ['psu'] });
+                critical = true;
+            }
+        }
+
+        if (cooler && casep) {
+            var coolerH = parseInt(cooler.specs_data?.cooler_height_mm || cooler.cooler_height_mm || 0);
+            var caseMaxC = parseInt(casep.specs_data?.max_cooler_height_mm || casep.max_cooler_height_mm || 0);
+            if (coolerH > 0 && caseMaxC > 0 && coolerH > caseMaxC) {
+                msgs.push({ severity: 'error', text: '\u041a\u0443\u043b\u0435\u0440 (' + coolerH + ' \u043c\u043c) \u043d\u0435 \u043f\u043e\u043c\u0435\u0441\u0442\u0438\u0442\u0441\u044f \u0432 \u043a\u043e\u0440\u043f\u0443\u0441 (\u043c\u0430\u043a\u0441 ' + caseMaxC + ' \u043c\u043c).', slots: ['cooler', 'case'] });
+                critical = true;
+            }
+        }
+
+        if (gpu && casep) {
+            var gpuLen = parseInt(gpu.specs_data?.length_mm || gpu.length_mm || 0);
+            var caseGpu = parseInt(casep.specs_data?.max_gpu_length_mm || casep.max_gpu_length_mm || 0);
+            if (gpuLen > 0 && caseGpu > 0 && gpuLen > caseGpu) {
+                msgs.push({ severity: 'error', text: '\u0412\u0438\u0434\u0435\u043e\u043a\u0430\u0440\u0442\u0430 (' + gpuLen + ' \u043c\u043c) \u043d\u0435 \u043f\u043e\u043c\u0435\u0441\u0442\u0438\u0442\u0441\u044f \u0432 \u043a\u043e\u0440\u043f\u0443\u0441 (\u043c\u0430\u043a\u0441 ' + caseGpu + ' \u043c\u043c).', slots: ['gpu', 'case'] });
+                critical = true;
+            }
+        }
+
+        if (mb && casep) {
+            var mbFF = mb.specs_data?.form_factor || mb.form_factor;
+            var caseFF = casep.specs_data?.form_factor || casep.form_factor;
+            if (mbFF && caseFF) {
+                var caseFFs;
+                if (typeof caseFF === 'string') { try { caseFFs = JSON.parse(caseFF); } catch(e) { caseFFs = [caseFF]; } }
+                else { caseFFs = caseFF; }
+                if (Array.isArray(caseFFs)) {
+                    var ffMap = {'Micro-ATX': ['Micro-ATX', 'mATX', 'micro-atx', 'matx'], 'Mini-ITX': ['Mini-ITX', 'ITX', 'mini-itx', 'itx'], 'ATX': ['ATX', 'atx'], 'E-ATX': ['E-ATX', 'EATX', 'e-atx', 'eatx']};
+                    var normalizeFF = function(ff) { for (var key in ffMap) { if (ffMap[key].indexOf(ff) !== -1) return key; } return ff; };
+                    var mbNorm = normalizeFF(mbFF);
+                    var caseFlatNorm = caseFFs.map(normalizeFF);
+                    if (caseFlatNorm.indexOf(mbNorm) === -1) {
+                        msgs.push({ severity: 'error', text: '\u041c\u0430\u0442\u0435\u0440\u0438\u043d\u0441\u043a\u0430\u044f \u043f\u043b\u0430\u0442\u0430 (' + mbFF + ') \u043d\u0435 \u043f\u043e\u0434\u0445\u043e\u0434\u0438\u0442 \u043a \u043a\u043e\u0440\u043f\u0443\u0441\u0443 (' + caseFFs.join(', ') + ').', slots: ['motherboard', 'case'] });
+                        critical = true;
+                    }
+                }
+            }
+        }
+
+        if (mb) {
+            var mbM2 = parseInt(mb.specs_data?.m2_slots || mb.m2_slots || 0);
+            var nvmeCount = 0;
+            for (var si2 = 0; si2 < storages.length; si2++) {
+                var sIface = storages[si2].specs_data?.interface_type || storages[si2].interface_type || '';
+                if (sIface.toLowerCase().indexOf('nvme') !== -1) nvmeCount++;
+            }
+            if (nvmeCount > mbM2) {
+                msgs.push({ severity: 'error', text: '\u0412\u044b\u0431\u0440\u0430\u043d\u043e ' + nvmeCount + ' NVMe \u043d\u0430\u043a\u043e\u043f\u0438\u0442\u0435\u043b\u0435\u0439, \u043d\u043e \u043c\u0430\u0442\u0435\u0440\u0438\u043d\u0441\u043a\u0430\u044f \u043f\u043b\u0430\u0442\u0430 \u0438\u043c\u0435\u0435\u0442 \u0442\u043e\u043b\u044c\u043a\u043e ' + mbM2 + ' M.2 \u0441\u043b\u043e\u0442\u043e\u0432.', slots: ['storage', 'motherboard'] });
+                critical = true;
+            }
+        }
+
+        if (!gpu && cpu) {
+            var iGpu = cpu.specs_data?.integrated_graphics || cpu.integrated_graphics;
+            if (!iGpu || iGpu === 'false' || iGpu === false) {
+                msgs.push({ severity: 'warning', text: '\u0412\u0438\u0434\u0435\u043e\u043a\u0430\u0440\u0442\u0430 \u043d\u0435 \u0432\u044b\u0431\u0440\u0430\u043d\u0430, \u0430 \u043f\u0440\u043e\u0446\u0435\u0441\u0441\u043e\u0440 \u043d\u0435 \u0438\u043c\u0435\u0435\u0442 \u0432\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u043e\u0439 \u0433\u0440\u0430\u0444\u0438\u043a\u0438.', slots: ['gpu', 'cpu'] });
+            }
+        }
+
+        if (msgs.length === 0) {
+            var d0 = document.createElement('div'); d0.className = 'ok'; d0.textContent = '\u041f\u0440\u043e\u0431\u043b\u0435\u043c \u0441\u043e\u0432\u043c\u0435\u0441\u0442\u0438\u043c\u043e\u0441\u0442\u0438 \u043d\u0435 \u043e\u0431\u043d\u0430\u0440\u0443\u0436\u0435\u043d\u043e.';
+            wb.appendChild(d0);
+        } else {
+            msgs.forEach(function(m) {
+                var d = document.createElement('div'); d.className = (m.severity === 'error' ? 'err' : 'warn'); d.textContent = m.text;
+                wb.appendChild(d);
+                if (m.severity === 'error' && m.slots) { m.slots.forEach(function(s) { errorSlots[s] = true; }); }
+            });
+        }
+
+        document.querySelectorAll('.slot.slot-error').forEach(function(el) { el.classList.remove('slot-error'); });
+        for (var ecat in errorSlots) {
+            var ec = document.getElementById('slots-' + ecat);
+            if (ec) ec.querySelectorAll('.slot').forEach(function(el) { el.classList.add('slot-error'); });
+        }
+
+        var expBtn = document.getElementById('export-build');
+        if (expBtn) { expBtn.disabled = critical; expBtn.style.opacity = critical ? 0.5 : 1; }
+    }
+
+    // Compatibility check for single product
+    function isProductCompatible(product, category) {
+        var cpu = category === 'cpu' ? product : getFirstSelected('cpu');
+        var mb = category === 'motherboard' ? product : getFirstSelected('motherboard');
+        var gpu = category === 'gpu' ? product : getFirstSelected('gpu');
+        var psu = category === 'psu' ? product : getFirstSelected('psu');
+        var cooler = category === 'cooler' ? product : getFirstSelected('cooler');
+        var casep = category === 'case' ? product : getFirstSelected('case');
+        var pSpecs = product.specs_data || {};
+
+        // Socket check
+        if (category === 'cpu' && mb) {
+            var mbSock = mb.specs_data?.socket || mb.socket;
+            var cpuSock = pSpecs.socket;
+            if (cpuSock && mbSock && cpuSock !== mbSock) return false;
+        }
+        if (category === 'motherboard' && cpu) {
+            var cpuS = cpu.specs_data?.socket || cpu.socket;
+            var mbS = pSpecs.socket;
+            if (cpuS && mbS && cpuS !== mbS) return false;
+        }
+
+        // GPU length vs case
+        if (category === 'gpu' && casep) {
+            var gLen = parseInt(pSpecs.length_mm || 0);
+            var cMax = parseInt(casep.specs_data?.max_gpu_length_mm || casep.max_gpu_length_mm || 0);
+            if (gLen > 0 && cMax > 0 && gLen > cMax) return false;
+        }
+
+        // Cooler height vs case
+        if (category === 'cooler' && casep) {
+            var cH = parseInt(pSpecs.cooler_height_mm || 0);
+            var cMH = parseInt(casep.specs_data?.max_cooler_height_mm || casep.max_cooler_height_mm || 0);
+            if (cH > 0 && cMH > 0 && cH > cMH) return false;
+        }
+
+        // Case form factor vs motherboard
+        if (category === 'case' && mb) {
+            var mbFf = mb.specs_data?.form_factor || mb.form_factor;
+            var cFf = pSpecs.form_factor;
+            if (mbFf && cFf) {
+                var cList;
+                if (typeof cFf === 'string') { try { cList = JSON.parse(cFf); } catch(e) { cList = [cFf]; } }
+                else { cList = cFf; }
+                if (Array.isArray(cList)) {
+                    var ffMap2 = {'Micro-ATX': ['Micro-ATX','mATX','micro-atx','matx'],'Mini-ITX':['Mini-ITX','ITX','mini-itx','itx'],'ATX':['ATX','atx'],'E-ATX':['E-ATX','EATX','e-atx','eatx']};
+                    var norm2 = function(f){for(var k in ffMap2){if(ffMap2[k].indexOf(f)!==-1)return k;}return f;};
+                    if (cList.map(norm2).indexOf(norm2(mbFf)) === -1) return false;
+                }
+            }
+        }
+        if (category === 'motherboard' && casep) {
+            var mbFf2 = pSpecs.form_factor;
+            var cFf2 = casep.specs_data?.form_factor || casep.form_factor;
+            if (mbFf2 && cFf2) {
+                var cList2;
+                if (typeof cFf2 === 'string') { try { cList2 = JSON.parse(cFf2); } catch(e) { cList2 = [cFf2]; } }
+                else { cList2 = cFf2; }
+                if (Array.isArray(cList2)) {
+                    var ffMap3 = {'Micro-ATX': ['Micro-ATX','mATX','micro-atx','matx'],'Mini-ITX':['Mini-ITX','ITX','mini-itx','itx'],'ATX':['ATX','atx'],'E-ATX':['E-ATX','EATX','e-atx','eatx']};
+                    var norm3 = function(f){for(var k in ffMap3){if(ffMap3[k].indexOf(f)!==-1)return k;}return f;};
+                    if (cList2.map(norm3).indexOf(norm3(mbFf2)) === -1) return false;
+                }
+            }
+        }
+
+        // PSU wattage check
+        if (category === 'psu') {
+            var cpuTdp = cpu ? parseInt(cpu.specs_data?.tdp_w || cpu.tdp_w || 0) : 0;
+            var gpuTdp = gpu ? parseInt(gpu.specs_data?.power_draw_w || gpu.power_draw_w || 0) : 0;
+            var req = Math.ceil((cpuTdp + gpuTdp) * 1.25);
+            var pw = parseInt(pSpecs.power_w || 0);
+            if (pw > 0 && req > 0 && pw < req) return false;
+        }
+
+        return true;
+    }
+
+    // Category collapse
+    document.querySelectorAll('.category-header').forEach(function(h) {
+        h.addEventListener('click', function() {
+            var cat = h.parentElement;
+            cat.classList.toggle('collapsed');
+            var body = cat.querySelector('.category-body');
+            body.style.display = cat.classList.contains('collapsed') ? 'none' : 'block';
+        });
+    });
+
+    // Clear All
+    var clearAllBtn = document.getElementById('clear-all-slots');
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', function() {
+            for (var cat in selection) { selection[cat] = [null]; }
+            renderAllSlots();
+            updateSummary();
+            showNotification('info', '\u0412\u0441\u0435 \u0441\u043b\u043e\u0442\u044b \u043e\u0447\u0438\u0449\u0435\u043d\u044b.');
+        });
+    }
+
+    // Catalog Modal
+    var currentSlot = null;
+    var currentSlotIndex = 0;
+    var currentPage = 1;
+    var lastPage = 1;
+    var currentFiltersData = {}; // filter values from API
+    var activeFilters = {};      // selected filter values {key: [val1, val2]}
+
+    function openCatalogModal(slot, index) {
+        currentSlot = slot;
+        currentSlotIndex = index || 0;
+        currentPage = 1;
+        activeFilters = {};
+        document.getElementById('modal-title').textContent = '\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435: ' + (SLOT_LABELS[slot] || slot);
+        document.getElementById('modal-search').value = '';
+        document.getElementById('modal-sort').value = 'name';
+        document.getElementById('modal-instock').checked = false;
+        document.getElementById('modal-compatible').checked = false;
+        document.getElementById('modal-list').innerHTML = '<div style="padding:20px;text-align:center;color:#999;">\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430...</div>';
+        loadFilters(slot);
+        loadProducts();
+        document.getElementById('catalog-modal').style.display = 'flex';
+    }
+
+    function closeCatalogModal() {
+        document.getElementById('catalog-modal').style.display = 'none';
+        currentSlot = null;
+    }
+
+    // Spec Filters
+    async function loadFilters(category) {
+        var container = document.getElementById('filter-groups');
+        container.innerHTML = '<div style="color:#999;font-size:12px;">\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430...</div>';
+        try {
+            var res = await fetch('/api/products/' + category + '/filters');
+            currentFiltersData = await res.json();
+        } catch(e) { currentFiltersData = {}; }
+        renderFilters();
+    }
+
+    function renderFilters() {
+        var container = document.getElementById('filter-groups');
+        container.innerHTML = '';
+        var defs = SPEC_DEFS[currentSlot] || [];
+        var keys = Object.keys(currentFiltersData);
+        if (!keys.length) {
+            container.innerHTML = '<div style="color:#999;font-size:12px;">\u041d\u0435\u0442 \u0444\u0438\u043b\u044c\u0442\u0440\u043e\u0432</div>';
+            return;
+        }
+        keys.forEach(function(key) {
+            var values = currentFiltersData[key];
+            if (!values || !values.length) return;
+            var def = defs.find(function(d) { return d.key === key; });
+            var label = def ? def.label : key;
+            var group = document.createElement('div');
+            group.className = 'filter-group';
+            var titleDiv = document.createElement('div');
+            titleDiv.className = 'filter-group-title';
+            titleDiv.innerHTML = esc(label) + ' <span class="fg-toggle">\u25be</span>';
+            var valuesDiv = document.createElement('div');
+            valuesDiv.className = 'filter-values';
+            titleDiv.addEventListener('click', function() {
+                valuesDiv.classList.toggle('collapsed');
+                titleDiv.querySelector('.fg-toggle').textContent = valuesDiv.classList.contains('collapsed') ? '\u25b8' : '\u25be';
+            });
+            values.forEach(function(v) {
+                var lbl = document.createElement('label');
+                var cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.dataset.filterKey = key;
+                cb.dataset.filterValue = String(v);
+                if (activeFilters[key] && activeFilters[key].indexOf(String(v)) !== -1) {
+                    cb.checked = true;
+                }
+                cb.addEventListener('change', function() {
+                    updateActiveFilters();
+                    currentPage = 1;
+                    loadProducts();
+                });
+                lbl.appendChild(cb);
+                lbl.appendChild(document.createTextNode(' ' + String(v)));
+                valuesDiv.appendChild(lbl);
+            });
+            group.appendChild(titleDiv);
+            group.appendChild(valuesDiv);
+            container.appendChild(group);
+        });
+    }
+
+    function updateActiveFilters() {
+        activeFilters = {};
+        document.querySelectorAll('#filter-groups input[type=checkbox]:checked').forEach(function(cb) {
+            var key = cb.dataset.filterKey;
+            var val = cb.dataset.filterValue;
+            if (!activeFilters[key]) activeFilters[key] = [];
+            activeFilters[key].push(val);
+        });
+    }
+
+    document.getElementById('filter-reset').addEventListener('click', function() {
+        activeFilters = {};
+        document.querySelectorAll('#filter-groups input[type=checkbox]').forEach(function(cb) { cb.checked = false; });
+        currentPage = 1;
+        loadProducts();
+    });
+
+    // Load Products
+    async function loadProducts() {
+        var slotAtStart = currentSlot;
+        var list = document.getElementById('modal-list');
+        list.innerHTML = '<div style="padding:20px;text-align:center;color:#999;">\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430...</div>';
+        var search = document.getElementById('modal-search').value;
+        var sort = document.getElementById('modal-sort').value;
+        var inStock = document.getElementById('modal-instock').checked;
+        var params = new URLSearchParams({ page: currentPage, sort: sort });
+        if (search) params.set('search', search);
+        if (inStock) params.set('in_stock', '1');
+
+        for (var fk in activeFilters) {
+            if (activeFilters[fk].length > 0) {
+                params.set('filter[' + fk + ']', activeFilters[fk].join(','));
+            }
+        }
+
+        var res = await fetch('/api/products/' + slotAtStart + '?' + params);
+        if (currentSlot !== slotAtStart) return;
+        var data = await res.json();
+        lastPage = data.last_page;
+
+        var products = data.data;
+
+        var compatOnly = document.getElementById('modal-compatible').checked;
+        if (compatOnly && currentSlot) {
+            products = products.filter(function(p) { return isProductCompatible(p, currentSlot); });
+        }
+
+        renderProductList(products);
+        document.getElementById('modal-pager-info').textContent = '\u0421\u0442\u0440\u0430\u043d\u0438\u0446\u0430 ' + data.current_page + ' \u0438\u0437 ' + data.last_page + ' (' + data.total + ' \u0442\u043e\u0432\u0430\u0440\u043e\u0432)';
+        document.getElementById('modal-prev').disabled = data.current_page <= 1;
+        document.getElementById('modal-next').disabled = data.current_page >= data.last_page;
+    }
+
+    function renderProductList(products) {
+        var list = document.getElementById('modal-list');
+        list.innerHTML = '';
+        if (!products.length) {
+            list.innerHTML = '<div style="padding:20px;text-align:center;color:#888;">\u041d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e</div>';
+            return;
+        }
+        products.forEach(function(p) {
+            var row = document.createElement('div');
+            row.className = 'cat-item';
+            var adminBtns = '';
+            if (isPrivileged()) {
+                adminBtns =
+                    '<button class="btn-edit-sm" data-edit-product="' + esc(p.product_id) + '">\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c</button>' +
+                    '<button class="btn-del-sm" data-del-product="' + esc(p.product_id) + '">\u0423\u0434\u0430\u043b\u0438\u0442\u044c</button>';
+            }
+            row.innerHTML =
+                '<div class="cat-left">' +
+                    '<div class="cat-thumb">' + (p.main_image_path ? '<img src="/' + esc(p.main_image_path) + '" alt="">' : '\ud83d\udce6') + '</div>' +
+                    '<div class="cat-info">' +
+                        '<div class="cat-title">' + esc(p.name) + '</div>' +
+                        '<div class="cat-desc">' + esc(p.description || '') + '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="cat-right">' +
+                    '<div style="font-weight:700;">' + formatPrice(p.price) + '</div>' +
+                    '<div style="font-size:13px;color:' + (p.stock_quantity > 0 ? '#4caf50' : '#d9534f') + ';">' + (p.stock_quantity > 0 ? '\u0412 \u043d\u0430\u043b\u0438\u0447\u0438\u0438: ' + p.stock_quantity : '\u041d\u0435\u0442 \u0432 \u043d\u0430\u043b\u0438\u0447\u0438\u0438') + '</div>' +
+                    '<div class="cat-actions">' +
+                        '<button class="btn-primary" data-select-product="' + esc(p.product_id) + '">\u0412\u044b\u0431\u0440\u0430\u0442\u044c</button>' +
+                        adminBtns +
+                    '</div>' +
+                '</div>';
+            row.querySelector('[data-select-product]').addEventListener('click', function(e) {
+                e.stopPropagation();
+                selectProduct(p);
+            });
+            var editBtn = row.querySelector('[data-edit-product]');
+            if (editBtn) {
+                editBtn.addEventListener('click', function(e) { e.stopPropagation(); openProductEditor('edit', currentSlot, p); });
+            }
+            var delBtn = row.querySelector('[data-del-product]');
+            if (delBtn) {
+                delBtn.addEventListener('click', function(e) { e.stopPropagation(); deleteProduct(p.product_id, p.name); });
+            }
+            row.addEventListener('click', function() { showProductDetail(p.product_id); });
+            list.appendChild(row);
+        });
+    }
+
+    function selectProduct(product) {
+        if (!currentSlot) return;
+        if (product.category_id && product.category_id !== currentSlot) return;
+        selection[currentSlot][currentSlotIndex] = product;
+        renderCategorySlots(currentSlot);
+        updateSummary();
+        closeCatalogModal();
+    }
+
+    // Product detail
+    async function showProductDetail(productId) {
+        var res = await fetch('/api/product/' + productId);
+        var p = await res.json();
+        var card = document.getElementById('product-card-content');
+        var specs = p.specs_data || {};
+        var category = p.category_id || currentSlot || '';
+        var defs = SPEC_DEFS[category] || [];
+
+        var specsHtml = '';
+        if (defs.length > 0) {
+            defs.forEach(function(def) {
+                var val = specs[def.key];
+                if (val === null || val === undefined || val === '') return;
+                specsHtml +=
+                    '<div class="product-spec-row">' +
+                        '<div>' +
+                            '<div class="psr-label">' + esc(def.label) + '</div>' +
+                            '<div class="psr-hint">' + esc(def.hint) + '</div>' +
+                        '</div>' +
+                        '<div class="psr-value">' + esc(String(val)) + '</div>' +
+                    '</div>';
+            });
+        } else {
+            // Fallback: show raw keys
+            for (var k in specs) {
+                if (k === 'product_id' || specs[k] === null || specs[k] === undefined) continue;
+                specsHtml += '<div class="product-spec-row"><div><div class="psr-label">' + esc(k) + '</div></div><div class="psr-value">' + esc(String(specs[k])) + '</div></div>';
+            }
+        }
+
+        var adminActions = '';
+        if (isPrivileged()) {
+            adminActions =
+                '<button class="btn-edit-sm" id="product-edit-btn">\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c</button>' +
+                '<button class="btn-del-sm" id="product-del-btn">\u0423\u0434\u0430\u043b\u0438\u0442\u044c</button>';
+        }
+
+        var imageHtml = '';
+        if (p.main_image_path) {
+            imageHtml = '<div style="text-align:center;margin-bottom:14px;"><img src="/' + esc(p.main_image_path) + '" alt="" style="max-width:100%;max-height:300px;object-fit:contain;border-radius:8px;"></div>';
+        }
+
+        card.innerHTML =
+            '<button class="btn-flat" style="position:absolute;top:12px;right:12px;" id="product-modal-close">\u2715</button>' +
+            '<h3 class="product-title">' + esc(p.name) + '</h3>' +
+            imageHtml +
+            '<div class="product-meta-block">' +
+                '<div class="product-price">' + formatPrice(p.price) + '</div>' +
+                '<div class="product-stock" style="color:' + (p.stock_quantity > 0 ? '#4caf50' : '#d9534f') + ';">' +
+                    (p.stock_quantity > 0 ? '\u0412 \u043d\u0430\u043b\u0438\u0447\u0438\u0438: ' + p.stock_quantity : '\u041d\u0435\u0442 \u0432 \u043d\u0430\u043b\u0438\u0447\u0438\u0438') +
+                '</div>' +
+            '</div>' +
+            (p.description ? '<div class="product-desc">' + esc(p.description) + '</div>' : '') +
+            (specsHtml ? '<h4 style="margin:12px 0 6px;font-size:14px;">\u0425\u0430\u0440\u0430\u043a\u0442\u0435\u0440\u0438\u0441\u0442\u0438\u043a\u0438</h4>' + specsHtml : '') +
+            '<div class="product-actions">' +
+                (currentSlot ? '<button class="btn-primary" id="product-select-btn">\u0412\u044b\u0431\u0440\u0430\u0442\u044c</button>' : '') +
+                adminActions +
+                '<button class="btn-ghost" id="product-back-btn">\u041d\u0430\u0437\u0430\u0434</button>' +
+            '</div>';
+        document.getElementById('product-modal-close').addEventListener('click', function() { document.getElementById('product-modal').style.display = 'none'; });
+        document.getElementById('product-back-btn').addEventListener('click', function() { document.getElementById('product-modal').style.display = 'none'; });
+        var selectBtn = document.getElementById('product-select-btn');
+        if (selectBtn) {
+            selectBtn.addEventListener('click', function() {
+                selectProduct(p);
+                document.getElementById('product-modal').style.display = 'none';
+            });
+        }
+        var pEditBtn = document.getElementById('product-edit-btn');
+        if (pEditBtn) { pEditBtn.addEventListener('click', function() { document.getElementById('product-modal').style.display = 'none'; openProductEditor('edit', currentSlot || p.category_id, p); }); }
+        var pDelBtn = document.getElementById('product-del-btn');
+        if (pDelBtn) { pDelBtn.addEventListener('click', function() { document.getElementById('product-modal').style.display = 'none'; deleteProduct(p.product_id, p.name); }); }
+        document.getElementById('product-modal').style.display = 'flex';
+    }
+
+    // Modal events
+    document.getElementById('modal-close').addEventListener('click', closeCatalogModal);
+    document.getElementById('catalog-modal').addEventListener('click', function(e) { if (e.target === e.currentTarget) closeCatalogModal(); });
+    document.getElementById('product-modal').addEventListener('click', function(e) { if (e.target === e.currentTarget) e.currentTarget.style.display = 'none'; });
+    document.getElementById('modal-search').addEventListener('input', debounce(function() { currentPage = 1; loadProducts(); }, 300));
+    document.getElementById('modal-sort').addEventListener('change', function() { currentPage = 1; loadProducts(); });
+    document.getElementById('modal-instock').addEventListener('change', function() { currentPage = 1; loadProducts(); });
+    document.getElementById('modal-compatible').addEventListener('change', function() { currentPage = 1; loadProducts(); });
+    document.getElementById('modal-prev').addEventListener('click', function() { if (currentPage > 1) { currentPage--; loadProducts(); } });
+    document.getElementById('modal-next').addEventListener('click', function() { if (currentPage < lastPage) { currentPage++; loadProducts(); } });
+
+    // Export Build
+    document.getElementById('export-build').addEventListener('click', function() {
+        var items = [];
+        for (var slot in selection) {
+            var prods = selection[slot];
+            for (var i = 0; i < prods.length; i++) {
+                if (prods[i]) items.push({ slot: slot, product_id: prods[i].product_id, name: prods[i].name, quantity: 1, unit_price: prods[i].price || 0 });
+            }
+        }
+        if (!items.length) { showNotification('warning', '\u041d\u0435 \u0432\u044b\u0431\u0440\u0430\u043d \u043d\u0438 \u043e\u0434\u0438\u043d \u043a\u043e\u043c\u043f\u043e\u043d\u0435\u043d\u0442.'); return; }
+        var payload = {
+            build_id: 'build-' + Date.now(),
+            created_at: new Date().toISOString(),
+            items: items,
+            total_price: items.reduce(function(s, i) { return s + i.unit_price; }, 0)
+        };
+        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = 'build-' + Date.now() + '.json';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showNotification('success', '\u0421\u0431\u043e\u0440\u043a\u0430 \u044d\u043a\u0441\u043f\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u0430 \u0432 JSON-\u0444\u0430\u0439\u043b.');
+    });
+
+    // Templates
+    var templatesCache = [];
+
+    async function loadTemplates() {
+        var container = document.getElementById('templates-list');
+        if (!container) return;
+        var res = await fetch('/api/templates');
+        templatesCache = await res.json();
+        container.innerHTML = '';
+        if (!templatesCache.length) {
+            container.innerHTML = '<div style="color:#999;font-size:13px;">\u041d\u0435\u0442 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0445 \u043a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u0439</div>';
+        } else {
+            templatesCache.forEach(function(t) {
+                var el = document.createElement('div');
+                el.className = 'template-item';
+                var btnsHtml = '<div style="display:flex;gap:4px;align-items:center;">' +
+                    '<button data-template-apply="' + esc(t.template_id) + '">\u041f\u0440\u0438\u043c\u0435\u043d\u0438\u0442\u044c</button>';
+                if (isPrivileged()) {
+                    btnsHtml += '<button class="btn-tpl-del" data-tpl-del="' + esc(t.template_id) + '">\u2715</button>';
+                }
+                btnsHtml += '</div>';
+                el.innerHTML = '<div class="meta" data-template-detail="' + esc(t.template_id) + '" style="cursor:pointer;">' + esc(t.name) + '</div>' + btnsHtml;
+                el.querySelector('[data-template-detail]').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    showTemplateDetail(t);
+                });
+                el.querySelector('[data-template-apply]').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    applyTemplate(t);
+                });
+                var delBtn = el.querySelector('[data-tpl-del]');
+                if (delBtn) { delBtn.addEventListener('click', function(e) { e.stopPropagation(); deleteTemplate(t.template_id, t.name); }); }
+                container.appendChild(el);
+            });
+        }
+        if (isPrivileged()) {
+            var existing = container.parentElement.querySelector('.btn-tpl-add');
+            if (!existing) {
+                var addBtn = document.createElement('button');
+                addBtn.className = 'btn-tpl-add';
+                addBtn.textContent = '+ \u0421\u043e\u0437\u0434\u0430\u0442\u044c \u043a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u044e';
+                addBtn.addEventListener('click', openTemplateEditor);
+                container.parentElement.appendChild(addBtn);
+            }
+        }
+    }
+
+    function applyTemplate(template) {
+        var items = template.items;
+        for (var slot in selection) { selection[slot] = [null]; }
+        for (var slot2 in items) {
+            var info = items[slot2];
+            if (info && info.product_id) {
+                selection[slot2] = [{ product_id: info.product_id, name: info.name, price: info.price, main_image_path: info.main_image_path || '' }];
+            }
+        }
+        renderAllSlots();
+        updateSummary();
+        showNotification('info', '\u0428\u0430\u0431\u043b\u043e\u043d \u00ab' + template.name + '\u00bb \u043f\u0440\u0438\u043c\u0435\u043d\u0451\u043d.');
+    }
+
+    // Template Detail Modal
+    async function showTemplateDetail(template) {
+        var modal = document.getElementById('template-detail-modal');
+        document.getElementById('tpl-detail-title').textContent = template.name;
+        var itemsDiv = document.getElementById('tpl-detail-items');
+        itemsDiv.innerHTML = '<div style="text-align:center;color:#999;">\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430...</div>';
+        modal.style.display = 'flex';
+
+        var items = template.items || {};
+        var total = 0;
+        itemsDiv.innerHTML = '';
+        var slots = Object.keys(items);
+        if (slots.length === 0) {
+            itemsDiv.innerHTML = '<div style="color:#999;">\u041a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u044f \u043f\u0443\u0441\u0442\u0430</div>';
+        }
+
+        for (var si3 = 0; si3 < slots.length; si3++) {
+            var slotName = slots[si3];
+            var itemInfo = items[slotName];
+            if (!itemInfo || !itemInfo.product_id) continue;
+            var price = itemInfo.price || 0;
+            total += price;
+            var imgHtml = '\ud83d\udce6';
+            if (itemInfo.main_image_path) {
+                imgHtml = '<img src="/' + esc(itemInfo.main_image_path) + '" alt="">';
+            }
+            var itemEl = document.createElement('div');
+            itemEl.className = 'tpl-detail-item';
+            itemEl.innerHTML =
+                '<div class="tpl-detail-img">' + imgHtml + '</div>' +
+                '<div class="tpl-detail-info">' +
+                    '<div class="tpl-detail-slot">' + esc(SLOT_LABELS[slotName] || slotName) + '</div>' +
+                    '<div class="tpl-detail-name">' + esc(itemInfo.name || itemInfo.product_id) + '</div>' +
+                    '<div class="tpl-detail-price">' + formatPrice(price) + '</div>' +
+                '</div>';
+            itemsDiv.appendChild(itemEl);
+        }
+        document.getElementById('tpl-detail-total').textContent = formatPrice(total);
+        modal._template = template;
+    }
+
+    document.getElementById('tpl-detail-close').addEventListener('click', function() { document.getElementById('template-detail-modal').style.display = 'none'; });
+    document.getElementById('tpl-detail-back').addEventListener('click', function() { document.getElementById('template-detail-modal').style.display = 'none'; });
+    document.getElementById('tpl-detail-apply').addEventListener('click', function() {
+        var modal = document.getElementById('template-detail-modal');
+        if (modal._template) applyTemplate(modal._template);
+        modal.style.display = 'none';
+    });
+    document.getElementById('template-detail-modal').addEventListener('click', function(e) { if (e.target === e.currentTarget) e.currentTarget.style.display = 'none'; });
+
+    async function deleteTemplate(templateId, name) {
+        var ok = await showConfirm('\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u044e', '\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u00ab' + name + '\u00bb?');
+        if (!ok) return;
+        var res = await fetch('/api/templates/' + templateId, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': CSRF } });
+        if (res.ok) { showNotification('success', '\u041a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u044f \u0443\u0434\u0430\u043b\u0435\u043d\u0430.'); loadTemplates(); }
+        else { showNotification('error', '\u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0438 \u0443\u0434\u0430\u043b\u0435\u043d\u0438\u0438 \u043a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u0438.'); }
+    }
+
+    // Template Editor
+    function openTemplateEditor() {
+        document.getElementById('tpl-editor-name').value = '';
+        document.getElementById('tpl-editor-public').checked = true;
+        var itemsDiv = document.getElementById('tpl-editor-items');
+        itemsDiv.innerHTML = '';
+        var hasItems = false;
+        for (var slot in selection) {
+            var prods = getAllSelected(slot);
+            for (var pi = 0; pi < prods.length; pi++) {
+                hasItems = true;
+                var d = document.createElement('div');
+                d.textContent = SLOT_LABELS[slot] + ': ' + prods[pi].name;
+                d.style.padding = '4px 0';
+                itemsDiv.appendChild(d);
+            }
+        }
+        if (!hasItems) { itemsDiv.innerHTML = '<div style="color:#d9534f;">\u0421\u0431\u043e\u0440\u043a\u0430 \u043f\u0443\u0441\u0442\u0430. \u0414\u043e\u0431\u0430\u0432\u044c\u0442\u0435 \u043a\u043e\u043c\u043f\u043e\u043d\u0435\u043d\u0442\u044b \u043f\u0435\u0440\u0435\u0434 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u0435\u043c.</div>'; }
+        document.getElementById('template-editor-modal').style.display = 'flex';
+    }
+
+    document.getElementById('tpl-editor-close').addEventListener('click', function() { document.getElementById('template-editor-modal').style.display = 'none'; });
+    document.getElementById('tpl-editor-cancel').addEventListener('click', function() { document.getElementById('template-editor-modal').style.display = 'none'; });
+    document.getElementById('template-editor-modal').addEventListener('click', function(e) { if (e.target === e.currentTarget) e.currentTarget.style.display = 'none'; });
+    document.getElementById('tpl-editor-save').addEventListener('click', async function() {
+        var name = document.getElementById('tpl-editor-name').value.trim();
+        if (!name) { showNotification('warning', '\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u043a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u0438.'); return; }
+        var items = [];
+        for (var slot in selection) {
+            var prods = getAllSelected(slot);
+            for (var pi2 = 0; pi2 < prods.length; pi2++) {
+                items.push({ slot_type: slot, product_id: prods[pi2].product_id });
+            }
+        }
+        if (!items.length) { showNotification('warning', '\u0421\u0431\u043e\u0440\u043a\u0430 \u043f\u0443\u0441\u0442\u0430.'); return; }
+        var res = await fetch('/api/templates', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            body: JSON.stringify({ name: name, items: items, is_public: document.getElementById('tpl-editor-public').checked }),
+        });
+        if (res.ok) {
+            showNotification('success', '\u041a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u044f \u00ab' + name + '\u00bb \u0441\u043e\u0437\u0434\u0430\u043d\u0430.');
+            document.getElementById('template-editor-modal').style.display = 'none';
+            loadTemplates();
+        } else {
+            var err = await res.json().catch(function() { return {}; });
+            showNotification('error', err.message || '\u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0438 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u0438.');
+        }
+    });
+
+    loadTemplates();
+
+    // Admin: Product CRUD
+    function isPrivileged() {
+        return AUTH && ['admin', 'content_manager', 'warehouse_manager'].indexOf(AUTH.role) !== -1;
+    }
+
+    var editorMode = null;
+    var editorProductId = null;
+    var editorUploadedImagePath = '';
+
+    function openProductEditor(mode, slot, product) {
+        editorMode = mode;
+        var editorSlot = slot || currentSlot;
+        document.getElementById('editor-title').textContent = mode === 'add' ? '\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0442\u043e\u0432\u0430\u0440' : '\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0442\u043e\u0432\u0430\u0440';
+        document.getElementById('editor-category').textContent = SLOT_LABELS[editorSlot] || editorSlot;
+        document.getElementById('editor-category').dataset.slot = editorSlot;
+
+        var pidInput = document.getElementById('editor-pid');
+        var nameInput = document.getElementById('editor-name');
+        var priceInput = document.getElementById('editor-price');
+        var stockInput = document.getElementById('editor-stock');
+        var descInput = document.getElementById('editor-desc');
+        var imgPathInput = document.getElementById('editor-image-path');
+        var imgFileInput = document.getElementById('editor-image-file');
+
+        imgFileInput.value = '';
+        editorUploadedImagePath = '';
+
+        if (mode === 'edit' && product) {
+            editorProductId = product.product_id;
+            pidInput.value = product.product_id;
+            pidInput.readOnly = true;
+            nameInput.value = product.name || '';
+            priceInput.value = product.price || 0;
+            stockInput.value = product.stock_quantity || 0;
+            descInput.value = product.description || '';
+            imgPathInput.value = product.main_image_path || '';
+            editorUploadedImagePath = product.main_image_path || '';
+        } else {
+            editorProductId = null;
+            pidInput.value = '';
+            pidInput.readOnly = false;
+            nameInput.value = '';
+            priceInput.value = '';
+            stockInput.value = 0;
+            descInput.value = '';
+            imgPathInput.value = '';
+        }
+
+        renderEditorImage(editorUploadedImagePath);
+        renderEditorSpecs(editorSlot, mode === 'edit' && product ? product.specs_data : null);
+        document.getElementById('product-editor-modal').style.display = 'flex';
+    }
+
+    function renderEditorImage(path) {
+        var preview = document.getElementById('editor-image-preview');
+        if (path) {
+            preview.innerHTML = '<img src="/' + esc(path) + '" alt="Preview"><div class="upload-hint">\u041d\u0430\u0436\u043c\u0438\u0442\u0435 \u0434\u043b\u044f \u0437\u0430\u043c\u0435\u043d\u044b</div>';
+        } else {
+            preview.innerHTML = '<span style="color:#999;">\u041d\u0430\u0436\u043c\u0438\u0442\u0435 \u0434\u043b\u044f \u0432\u044b\u0431\u043e\u0440\u0430</span><div class="upload-hint">\u041d\u0430\u0436\u043c\u0438\u0442\u0435 \u0434\u043b\u044f \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438</div>';
+        }
+    }
+
+    document.getElementById('editor-image-preview').addEventListener('click', function() {
+        document.getElementById('editor-image-file').click();
+    });
+
+    document.getElementById('editor-image-file').addEventListener('change', async function() {
+        var file = this.files[0];
+        if (!file) return;
+        var slot = document.getElementById('editor-category').dataset.slot;
+        var formData = new FormData();
+        formData.append('image', file);
+        formData.append('category', slot);
+
+        var preview = document.getElementById('editor-image-preview');
+        preview.innerHTML = '<span style="color:#999;">\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430...</span>';
+
+        try {
+            var res = await fetch('/api/product/upload-image', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': CSRF },
+                body: formData
+            });
+            if (res.ok) {
+                var data = await res.json();
+                editorUploadedImagePath = data.path;
+                document.getElementById('editor-image-path').value = data.path;
+                renderEditorImage(data.path);
+            } else {
+                var err = await res.json().catch(function() { return {}; });
+                showNotification('error', err.message || '\u041e\u0448\u0438\u0431\u043a\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f.');
+                renderEditorImage(editorUploadedImagePath);
+            }
+        } catch(e) {
+            showNotification('error', '\u041e\u0448\u0438\u0431\u043a\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f.');
+            renderEditorImage(editorUploadedImagePath);
+        }
+    });
+
+    function renderEditorSpecs(slot, existingSpecs) {
+        var container = document.getElementById('editor-specs-list');
+        container.innerHTML = '';
+        var defs = SPEC_DEFS[slot] || [];
+        if (!defs.length) {
+            container.innerHTML = '<div style="color:#999;font-size:13px;">\u041d\u0435\u0442 \u0445\u0430\u0440\u0430\u043a\u0442\u0435\u0440\u0438\u0441\u0442\u0438\u043a \u0434\u043b\u044f \u0434\u0430\u043d\u043d\u043e\u0439 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u0438.</div>';
+            return;
+        }
+        defs.forEach(function(def) {
+            var row = document.createElement('div');
+            row.className = 'spec-editor-row';
+            var val = '';
+            if (existingSpecs && existingSpecs[def.key] !== null && existingSpecs[def.key] !== undefined) {
+                val = String(existingSpecs[def.key]);
+            }
+            row.innerHTML =
+                '<div>' +
+                    '<div class="spec-label">' + esc(def.label) + '</div>' +
+                    '<div class="spec-hint">' + esc(def.hint) + '</div>' +
+                '</div>' +
+                '<div>' +
+                    '<input data-spec-key="' + esc(def.key) + '" type="text" value="' + esc(val) + '" placeholder="\u2014">' +
+                '</div>';
+            container.appendChild(row);
+        });
+    }
+
+    function closeProductEditor() {
+        document.getElementById('product-editor-modal').style.display = 'none';
+    }
+
+    document.getElementById('editor-close').addEventListener('click', closeProductEditor);
+    document.getElementById('editor-cancel').addEventListener('click', closeProductEditor);
+    document.getElementById('product-editor-modal').addEventListener('click', function(e) {
+        if (e.target === e.currentTarget) closeProductEditor();
+    });
+
+    document.getElementById('editor-save').addEventListener('click', async function() {
+        var slot = document.getElementById('editor-category').dataset.slot;
+        var pid = document.getElementById('editor-pid').value.trim();
+        var name = document.getElementById('editor-name').value.trim();
+        var price = parseInt(document.getElementById('editor-price').value) || 0;
+        var stock = parseInt(document.getElementById('editor-stock').value) || 0;
+        var desc = document.getElementById('editor-desc').value.trim();
+        var imgPath = document.getElementById('editor-image-path').value.trim();
+
+        if (!name) { showNotification('warning', '\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0442\u043e\u0432\u0430\u0440\u0430.'); return; }
+        if (!pid && editorMode === 'add') { showNotification('warning', '\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0430\u0440\u0442\u0438\u043a\u0443\u043b \u0442\u043e\u0432\u0430\u0440\u0430.'); return; }
+
+        var specs = {};
+        document.querySelectorAll('#editor-specs-list [data-spec-key]').forEach(function(input) {
+            var v = input.value.trim();
+            if (v !== '') {
+                specs[input.dataset.specKey] = isNaN(v) ? v : parseFloat(v);
+            }
+        });
+
+        var body = {
+            name: name,
+            price: price,
+            stock_quantity: stock,
+            description: desc,
+            main_image_path: imgPath,
+            specs: specs
+        };
+
+        var url, method;
+        if (editorMode === 'add') {
+            body.product_id = pid;
+            body.category_id = slot;
+            url = '/api/products';
+            method = 'POST';
+        } else {
+            url = '/api/product/' + editorProductId;
+            method = 'PUT';
+        }
+
+        var res = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+            showNotification('success', editorMode === 'add' ? '\u0422\u043e\u0432\u0430\u0440 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d.' : '\u0422\u043e\u0432\u0430\u0440 \u043e\u0431\u043d\u043e\u0432\u043b\u0451\u043d.');
+            closeProductEditor();
+            loadProducts();
+        } else {
+            var err2 = await res.json().catch(function() { return {}; });
+            var msg = '';
+            if (err2.errors) {
+                for (var field in err2.errors) { msg += err2.errors[field].join(', ') + ' '; }
+            } else {
+                msg = err2.message || '\u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0438 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u0438.';
+            }
+            showNotification('error', msg);
+        }
+    });
+
+    async function deleteProduct(productId, productName) {
+        var ok = await showConfirm('\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u0442\u043e\u0432\u0430\u0440', '\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u00ab' + productName + '\u00bb? \u042d\u0442\u043e \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435 \u043d\u0435\u043e\u0431\u0440\u0430\u0442\u0438\u043c\u043e.');
+        if (!ok) return;
+        var res = await fetch('/api/product/' + productId, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': CSRF }
+        });
+        if (res.ok) {
+            showNotification('success', '\u0422\u043e\u0432\u0430\u0440 \u0443\u0434\u0430\u043b\u0451\u043d.');
+            loadProducts();
+        } else {
+            showNotification('error', '\u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0438 \u0443\u0434\u0430\u043b\u0435\u043d\u0438\u0438 \u0442\u043e\u0432\u0430\u0440\u0430.');
+        }
+    }
+
+    var addProductBtn = document.getElementById('catalog-add-product');
+    if (addProductBtn) {
+        addProductBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (currentSlot) openProductEditor('add', currentSlot, null);
+        });
+    }
+
+    // Publish Build
+    var publishBtn = document.getElementById('publish-build');
+    if (publishBtn) {
+        publishBtn.addEventListener('click', function() {
+            var itemsDiv = document.getElementById('publish-items');
+            itemsDiv.innerHTML = '';
+            document.getElementById('publish-name').value = '';
+            document.getElementById('publish-desc').value = '';
+            var hasItems = false;
+            for (var slot in selection) {
+                var prods = getAllSelected(slot);
+                for (var pi3 = 0; pi3 < prods.length; pi3++) {
+                    hasItems = true;
+                    var d = document.createElement('div');
+                    d.textContent = SLOT_LABELS[slot] + ': ' + prods[pi3].name;
+                    d.style.padding = '4px 0';
+                    itemsDiv.appendChild(d);
+                }
+            }
+            if (!hasItems) {
+                itemsDiv.innerHTML = '<div style="color:#d9534f;">\u0421\u0431\u043e\u0440\u043a\u0430 \u043f\u0443\u0441\u0442\u0430. \u0414\u043e\u0431\u0430\u0432\u044c\u0442\u0435 \u043a\u043e\u043c\u043f\u043e\u043d\u0435\u043d\u0442\u044b.</div>';
+            }
+            document.getElementById('publish-build-modal').style.display = 'flex';
+        });
+    }
+
+    var publishModal = document.getElementById('publish-build-modal');
+    if (publishModal) {
+        document.getElementById('publish-close').addEventListener('click', function() { publishModal.style.display = 'none'; });
+        document.getElementById('publish-cancel').addEventListener('click', function() { publishModal.style.display = 'none'; });
+        publishModal.addEventListener('click', function(e) { if (e.target === e.currentTarget) publishModal.style.display = 'none'; });
+
+        document.getElementById('publish-submit').addEventListener('click', async function() {
+            var name = document.getElementById('publish-name').value.trim();
+            if (!name) { showNotification('warning', '\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0441\u0431\u043e\u0440\u043a\u0438.'); return; }
+            var desc = document.getElementById('publish-desc').value.trim();
+            var buildData = {};
+            var totalPrice = 0;
+            for (var slot in selection) {
+                var prods = getAllSelected(slot);
+                if (prods.length === 1) {
+                    var p = prods[0];
+                    buildData[slot] = { product_id: p.product_id, name: p.name, price: p.price || 0, main_image_path: p.main_image_path || '' };
+                    totalPrice += (p.price || 0);
+                } else {
+                    for (var pi4 = 0; pi4 < prods.length; pi4++) {
+                        var p = prods[pi4];
+                        var key = slot + '_' + (pi4 + 1);
+                        buildData[key] = { product_id: p.product_id, name: p.name, price: p.price || 0, main_image_path: p.main_image_path || '' };
+                        totalPrice += (p.price || 0);
+                    }
+                }
+            }
+            if (!Object.keys(buildData).length) { showNotification('warning', '\u0421\u0431\u043e\u0440\u043a\u0430 \u043f\u0443\u0441\u0442\u0430.'); return; }
+            var res = await fetch('/api/builds', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                body: JSON.stringify({ name: name, description: desc, build_data: buildData, total_price: totalPrice })
+            });
+            if (res.ok) {
+                var data = await res.json();
+                showNotification('success', '\u0421\u0431\u043e\u0440\u043a\u0430 \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u0430!');
+                publishModal.style.display = 'none';
+            } else {
+                var err3 = await res.json().catch(function() { return {}; });
+                showNotification('error', err3.message || '\u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0438 \u043f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0438.');
+            }
+        });
+    }
+
+    // Init
+    renderAllSlots();
+    updateSummary();
+
+    // Apply build from catalog
+    (function checkApplyBuild() {
+        var raw = localStorage.getItem('apply_build_data');
+        if (!raw) return;
+        localStorage.removeItem('apply_build_data');
+        var buildData;
+        try { buildData = JSON.parse(raw); } catch(e) { return; }
+        if (!buildData || typeof buildData !== 'object') return;
+
+        for (var cat in selection) { selection[cat] = [null]; }
+
+        var grouped = {};
+        for (var key in buildData) {
+            var base = key.replace(/_\d+$/, '');
+            if (!SLOT_LABELS[base]) continue;
+            if (!grouped[base]) grouped[base] = [];
+            grouped[base].push(buildData[key]);
+        }
+
+        var fetches = [];
+        for (var cat in grouped) {
+            var items = grouped[cat];
+            selection[cat] = [];
+            for (var i = 0; i < items.length; i++) {
+                (function(c, idx, item) {
+                    var f = fetch('/api/product/' + item.product_id)
+                        .then(function(res) { return res.ok ? res.json() : null; })
+                        .then(function(product) { if (product) selection[c][idx] = product; })
+                        .catch(function() {});
+                    fetches.push(f);
+                })(cat, i, items[i]);
+            }
+        }
+
+        Promise.all(fetches).then(function() {
+            for (var c in selection) {
+                if (!selection[c] || selection[c].length === 0) selection[c] = [null];
+            }
+            renderAllSlots();
+            updateSummary();
+            showNotification('success', '\u0421\u0431\u043e\u0440\u043a\u0430 \u043f\u0440\u0438\u043c\u0435\u043d\u0435\u043d\u0430!');
+        });
+    })();
+
+    // Helpers
+    function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function debounce(fn, ms) { var t; return function() { var a = arguments; clearTimeout(t); t = setTimeout(function() { fn.apply(null, a); }, ms); }; }
+})();
