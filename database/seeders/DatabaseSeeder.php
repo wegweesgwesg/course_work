@@ -10,7 +10,7 @@ class DatabaseSeeder extends Seeder
 {
     private function jsonPath(string $file): string
     {
-        return base_path('../OldSite/catalog_jsons/' . $file);
+        return base_path('../catalog_jsons/' . $file);
     }
 
     private function loadJson(string $file): array
