@@ -1,0 +1,136 @@
+[
+  {
+    "product_id": "nvme-1tb",
+    "power_draw_w": 6,
+    "interface_type": "NVMe",
+    "pcie_version": 3,
+    "power_w": 6.0
+  },
+  {
+    "product_id": "hdd-2tb",
+    "power_draw_w": 5,
+    "interface_type": "SATA",
+    "pcie_version": null,
+    "power_w": 5.0
+  },
+  {
+    "product_id": "nvme-250gb",
+    "power_draw_w": 4,
+    "interface_type": "NVMe",
+    "pcie_version": 3,
+    "capacity_gb": 250,
+    "power_w": 4.0
+  },
+  {
+    "product_id": "nvme-500gb",
+    "power_draw_w": 5,
+    "interface_type": "NVMe",
+    "pcie_version": 3,
+    "capacity_gb": 500,
+    "power_w": 5.0
+  },
+  {
+    "product_id": "nvme-512gb",
+    "power_draw_w": 5,
+    "interface_type": "NVMe",
+    "pcie_version": 3,
+    "capacity_gb": 512,
+    "power_w": 5.0
+  },
+  {
+    "product_id": "nvme-1tb-pro",
+    "power_draw_w": 8,
+    "interface_type": "NVMe",
+    "pcie_version": 4,
+    "capacity_gb": 1000,
+    "power_w": 8.0
+  },
+  {
+    "product_id": "nvme-2tb",
+    "power_draw_w": 8,
+    "interface_type": "NVMe",
+    "pcie_version": 4,
+    "capacity_gb": 2000,
+    "power_w": 8.0
+  },
+  {
+    "product_id": "nvme-4tb",
+    "power_draw_w": 10,
+    "interface_type": "NVMe",
+    "pcie_version": 4,
+    "capacity_gb": 4000,
+    "power_w": 10.0
+  },
+  {
+    "product_id": "ssd-240gb",
+    "power_draw_w": 3,
+    "interface_type": "SATA",
+    "pcie_version": null,
+    "capacity_gb": 240,
+    "power_w": 3.0
+  },
+  {
+    "product_id": "ssd-480gb",
+    "power_draw_w": 3,
+    "interface_type": "SATA",
+    "pcie_version": null,
+    "capacity_gb": 480,
+    "power_w": 3.0
+  },
+  {
+    "product_id": "ssd-1tb",
+    "power_draw_w": 4,
+    "interface_type": "SATA",
+    "pcie_version": null,
+    "capacity_gb": 1000,
+    "power_w": 4.0
+  },
+  {
+    "product_id": "ssd-2tb",
+    "power_draw_w": 5,
+    "interface_type": "SATA",
+    "pcie_version": null,
+    "capacity_gb": 2000,
+    "power_w": 5.0
+  },
+  {
+    "product_id": "m2-sata-1tb",
+    "power_draw_w": 4,
+    "interface_type": "SATA",
+    "pcie_version": null,
+    "capacity_gb": 1000,
+    "power_w": 4.0
+  },
+  {
+    "product_id": "hdd-1tb",
+    "power_draw_w": 5,
+    "interface_type": "SATA",
+    "pcie_version": null,
+    "capacity_gb": 1000,
+    "power_w": 5.0
+  },
+  {
+    "product_id": "hdd-4tb",
+    "power_draw_w": 7,
+    "interface_type": "SATA",
+    "pcie_version": null,
+    "capacity_gb": 4000,
+    "power_w": 7.0
+  },
+  {
+    "product_id": "hybrid-1tb",
+    "power_draw_w": 6,
+    "interface_type": "SATA",
+    "pcie_version": null,
+    "capacity_gb": 1000,
+    "power_w": 6.0
+  },
+  {
+    "product_id": "external-ssd-1tb",
+    "power_draw_w": 6,
+    "interface_type": "USB",
+    "pcie_version": null,
+    "capacity_gb": 1000,
+    "power_w": 6.0
+  }
+]

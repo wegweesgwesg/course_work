@@ -1,0 +1,30 @@
+[
+  {
+    "id": "mbslot-1",
+    "product_id": "mb-asus-b550",
+    "slot_kind": "x16",
+    "count": 1,
+    "power_w": 40.0
+  },
+  {
+    "id": "mbslot-2",
+    "product_id": "mb-asus-b550",
+    "slot_kind": "x1",
+    "count": 2,
+    "power_w": 40.0
+  },
+  {
+    "id": "mbslot-3",
+    "product_id": "mb-msi-z490",
+    "slot_kind": "x16",
+    "count": 1,
+    "power_w": 40.0
+  },
+  {
+    "id": "mbslot-4",
+    "product_id": "mb-msi-z490",
+    "slot_kind": "x1",
+    "count": 2,
+    "power_w": 40.0
+  }
+]

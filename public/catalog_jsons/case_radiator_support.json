@@ -1,0 +1,152 @@
+[
+  {
+    "id": "rad-1",
+    "product_id": "case-mid-atx",
+    "size_mm": 120,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-2",
+    "product_id": "case-mid-atx",
+    "size_mm": 240,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-3",
+    "product_id": "case-mini-itx",
+    "size_mm": 120,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-4",
+    "product_id": "case-atx-glass",
+    "size_mm": 120,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-5",
+    "product_id": "case-atx-glass",
+    "size_mm": 240,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-6",
+    "product_id": "case-atx-glass",
+    "size_mm": 360,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-7",
+    "product_id": "case-full-tower",
+    "size_mm": 120,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-8",
+    "product_id": "case-full-tower",
+    "size_mm": 240,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-9",
+    "product_id": "case-full-tower",
+    "size_mm": 360,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-10",
+    "product_id": "case-full-tower",
+    "size_mm": 420,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-11",
+    "product_id": "case-mini-itx-rgb",
+    "size_mm": 120,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-12",
+    "product_id": "case-micro-atx",
+    "size_mm": 120,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-13",
+    "product_id": "case-micro-atx",
+    "size_mm": 240,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-14",
+    "product_id": "case-sff-vertical",
+    "size_mm": 120,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-15",
+    "product_id": "case-tempered-rgb",
+    "size_mm": 240,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-16",
+    "product_id": "case-tempered-rgb",
+    "size_mm": 120,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-17",
+    "product_id": "case-silent",
+    "size_mm": 120,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-18",
+    "product_id": "case-gaming-compact",
+    "size_mm": 280,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-19",
+    "product_id": "case-dual-chamber",
+    "size_mm": 240,
+    "power_w": 40.0
+  },
+  {
+    "id": "rad-20",
+    "product_id": "case-dual-chamber",
+    "size_mm": 120,
+    "power_w": 40.0
+  },
+  {
+    "id": "rad-21",
+    "product_id": "case-tempered-mini",
+    "size_mm": 120,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-22",
+    "product_id": "case-rgb-tower",
+    "size_mm": 240,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-23",
+    "product_id": "case-compact-airflow",
+    "size_mm": 120,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-24",
+    "product_id": "case-workstation",
+    "size_mm": 360,
+    "power_w": 0.0
+  },
+  {
+    "id": "rad-25",
+    "product_id": "case-open-frame",
+    "size_mm": 420,
+    "power_w": 0.0
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "category_id": "cpu",
+    "name": "cpu",
+    "power_w": 65.0
+  },
+  {
+    "category_id": "motherboard",
+    "name": "motherboard",
+    "power_w": 40.0
+  },
+  {
+    "category_id": "ram",
+    "name": "ram",
+    "power_w": 3.0
+  },
+  {
+    "category_id": "gpu",
+    "name": "gpu",
+    "power_w": 150.0
+  },
+  {
+    "category_id": "storage",
+    "name": "storage",
+    "power_w": 4.0
+  },
+  {
+    "category_id": "psu",
+    "name": "psu",
+    "power_w": null
+  },
+  {
+    "category_id": "cooler",
+    "name": "cooler",
+    "power_w": 3.0
+  },
+  {
+    "category_id": "case",
+    "name": "case",
+    "power_w": 0.0
+  }
+]

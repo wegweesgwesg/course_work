@@ -1,0 +1,65 @@
+[
+  {
+    "product_id": "ram-16-ddr4-3200",
+    "ram_type": "DDR4",
+    "size_gb": 16,
+    "speed_mhz": 3200,
+    "power_w": 6.0
+  },
+  {
+    "product_id": "ram-8-ddr4-2666",
+    "ram_type": "DDR4",
+    "size_gb": 8,
+    "speed_mhz": 2666,
+    "power_w": 3.0
+  },
+  {
+    "product_id": "ram-8-ddr4-2400",
+    "ram_type": "DDR4",
+    "size_gb": 8,
+    "speed_mhz": 2400,
+    "power_w": 3.0
+  },
+  {
+    "product_id": "ram-8-ddr5-4800",
+    "ram_type": "DDR5",
+    "size_gb": 8,
+    "speed_mhz": 4800,
+    "power_w": 3.0
+  },
+  {
+    "product_id": "ram-16-ddr4-3000",
+    "ram_type": "DDR4",
+    "size_gb": 16,
+    "speed_mhz": 3000,
+    "power_w": 6.0
+  },
+  {
+    "product_id": "ram-16-ddr5-5200",
+    "ram_type": "DDR5",
+    "size_gb": 16,
+    "speed_mhz": 5200,
+    "power_w": 6.0
+  },
+  {
+    "product_id": "ram-32-ddr4-3200",
+    "ram_type": "DDR4",
+    "size_gb": 32,
+    "speed_mhz": 3200,
+    "power_w": 12.0
+  },
+  {
+    "product_id": "ram-32-ddr5-5600",
+    "ram_type": "DDR5",
+    "size_gb": 32,
+    "speed_mhz": 5600,
+    "power_w": 12.0
+  },
+  {
+    "product_id": "ram-64-ddr4-3200",
+    "ram_type": "DDR4",
+    "size_gb": 64,
+    "speed_mhz": 3200,
+    "power_w": 24.0
+  }
+]

@@ -1,0 +1,121 @@
+[
+  {
+    "product_id": "cooler-140mm",
+    "cooler_height_mm": 155,
+    "connector_pin_count": 4,
+    "radiator_size_mm": null,
+    "power_w": 3.0
+  },
+  {
+    "product_id": "aio-240",
+    "cooler_height_mm": null,
+    "connector_pin_count": 4,
+    "radiator_size_mm": 240,
+    "power_w": 8.0
+  },
+  {
+    "product_id": "cooler-120mm",
+    "cooler_height_mm": 130,
+    "connector_pin_count": 4,
+    "radiator_size_mm": null,
+    "power_w": 3.0
+  },
+  {
+    "product_id": "cooler-92mm",
+    "cooler_height_mm": 58,
+    "connector_pin_count": 4,
+    "radiator_size_mm": null,
+    "power_w": 3.0
+  },
+  {
+    "product_id": "cooler-120mm-twin",
+    "cooler_height_mm": 160,
+    "connector_pin_count": 4,
+    "radiator_size_mm": null,
+    "power_w": 3.0
+  },
+  {
+    "product_id": "cooler-140mm-pro",
+    "cooler_height_mm": 155,
+    "connector_pin_count": 4,
+    "radiator_size_mm": null,
+    "power_w": 3.0
+  },
+  {
+    "product_id": "cooler-tower-160mm",
+    "cooler_height_mm": 160,
+    "connector_pin_count": 4,
+    "radiator_size_mm": null,
+    "power_w": 3.0
+  },
+  {
+    "product_id": "cooler-lowprofile-45",
+    "cooler_height_mm": 45,
+    "connector_pin_count": 4,
+    "radiator_size_mm": null,
+    "power_w": 3.0
+  },
+  {
+    "product_id": "cooler-130mm",
+    "cooler_height_mm": 140,
+    "connector_pin_count": 4,
+    "radiator_size_mm": null,
+    "power_w": 3.0
+  },
+  {
+    "product_id": "aio-120",
+    "cooler_height_mm": null,
+    "connector_pin_count": 4,
+    "radiator_size_mm": 120,
+    "power_w": 8.0
+  },
+  {
+    "product_id": "aio-240-pro",
+    "cooler_height_mm": null,
+    "connector_pin_count": 4,
+    "radiator_size_mm": 240,
+    "power_w": 8.0
+  },
+  {
+    "product_id": "aio-280",
+    "cooler_height_mm": null,
+    "connector_pin_count": 4,
+    "radiator_size_mm": 280,
+    "power_w": 8.0
+  },
+  {
+    "product_id": "aio-360",
+    "cooler_height_mm": null,
+    "connector_pin_count": 4,
+    "radiator_size_mm": 360,
+    "power_w": 8.0
+  },
+  {
+    "product_id": "aio-420",
+    "cooler_height_mm": null,
+    "connector_pin_count": 4,
+    "radiator_size_mm": 420,
+    "power_w": 8.0
+  },
+  {
+    "product_id": "cooler-sff-92mm",
+    "cooler_height_mm": 60,
+    "connector_pin_count": 4,
+    "radiator_size_mm": null,
+    "power_w": 3.0
+  },
+  {
+    "product_id": "aio-240-rgb",
+    "cooler_height_mm": null,
+    "connector_pin_count": 4,
+    "radiator_size_mm": 240,
+    "power_w": 8.0
+  },
+  {
+    "product_id": "cooler-tower-150mm",
+    "cooler_height_mm": 150,
+    "connector_pin_count": 4,
+    "radiator_size_mm": null,
+    "power_w": 3.0
+  }
+]

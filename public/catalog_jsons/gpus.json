@@ -1,0 +1,104 @@
+[
+  {
+    "product_id": "gpu-rx5600",
+    "power_draw_w": 150,
+    "length_mm": 270,
+    "power_w": 150.0
+  },
+  {
+    "product_id": "gpu-gtx1660",
+    "power_draw_w": 120,
+    "length_mm": 230,
+    "power_w": 120.0
+  },
+  {
+    "product_id": "gpu-rx6600",
+    "power_draw_w": 132,
+    "length_mm": 210,
+    "power_w": 132.0
+  },
+  {
+    "product_id": "gpu-rx6700",
+    "power_draw_w": 230,
+    "length_mm": 267,
+    "power_w": 230.0
+  },
+  {
+    "product_id": "gpu-rx6700-xt",
+    "power_draw_w": 230,
+    "length_mm": 270,
+    "power_w": 230.0
+  },
+  {
+    "product_id": "gpu-rx6800",
+    "power_draw_w": 250,
+    "length_mm": 267,
+    "power_w": 250.0
+  },
+  {
+    "product_id": "gpu-rx6800-xt",
+    "power_draw_w": 300,
+    "length_mm": 275,
+    "power_w": 300.0
+  },
+  {
+    "product_id": "gpu-rx6900-xt",
+    "power_draw_w": 300,
+    "length_mm": 285,
+    "power_w": 300.0
+  },
+  {
+    "product_id": "gpu-rtx3060",
+    "power_draw_w": 170,
+    "length_mm": 242,
+    "power_w": 170.0
+  },
+  {
+    "product_id": "gpu-rtx3060-ti",
+    "power_draw_w": 200,
+    "length_mm": 242,
+    "power_w": 200.0
+  },
+  {
+    "product_id": "gpu-rtx3070",
+    "power_draw_w": 220,
+    "length_mm": 242,
+    "power_w": 220.0
+  },
+  {
+    "product_id": "gpu-rtx3070-ti",
+    "power_draw_w": 290,
+    "length_mm": 285,
+    "power_w": 290.0
+  },
+  {
+    "product_id": "gpu-rtx3080",
+    "power_draw_w": 320,
+    "length_mm": 285,
+    "power_w": 320.0
+  },
+  {
+    "product_id": "gpu-rtx3080-ti",
+    "power_draw_w": 350,
+    "length_mm": 285,
+    "power_w": 350.0
+  },
+  {
+    "product_id": "gpu-rtx3090",
+    "power_draw_w": 350,
+    "length_mm": 313,
+    "power_w": 350.0
+  },
+  {
+    "product_id": "gpu-rtx4060",
+    "power_draw_w": 115,
+    "length_mm": 210,
+    "power_w": 115.0
+  },
+  {
+    "product_id": "gpu-rtx4070",
+    "power_draw_w": 200,
+    "length_mm": 245,
+    "power_w": 200.0
+  }
+]

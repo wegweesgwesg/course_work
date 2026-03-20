@@ -1,0 +1,241 @@
+[
+  {
+    "product_id": "case-mid-atx",
+    "form_factor": [
+      "ATX",
+      "mATX",
+      "ITX"
+    ],
+    "max_gpu_length_mm": 320,
+    "max_cooler_height_mm": 165,
+    "m2_slots": 2,
+    "drive_bays": 3,
+    "front_usb_c": false,
+    "audio_header": true,
+    "power_w": 0.0
+  },
+  {
+    "product_id": "case-mini-itx",
+    "form_factor": [
+      "ITX"
+    ],
+    "max_gpu_length_mm": 210,
+    "max_cooler_height_mm": 130,
+    "m2_slots": 1,
+    "drive_bays": 1,
+    "front_usb_c": false,
+    "audio_header": true,
+    "power_w": 0.0
+  },
+  {
+    "product_id": "case-atx-glass",
+    "form_factor": [
+      "ATX",
+      "mATX",
+      "ITX"
+    ],
+    "max_gpu_length_mm": 340,
+    "max_cooler_height_mm": 165,
+    "m2_slots": 3,
+    "drive_bays": 4,
+    "front_usb_c": true,
+    "audio_header": true,
+    "power_w": 0.0
+  },
+  {
+    "product_id": "case-full-tower",
+    "form_factor": [
+      "E-ATX",
+      "ATX",
+      "mATX",
+      "ITX"
+    ],
+    "max_gpu_length_mm": 420,
+    "max_cooler_height_mm": 190,
+    "m2_slots": 4,
+    "drive_bays": 6,
+    "front_usb_c": true,
+    "audio_header": true,
+    "power_w": 0.0
+  },
+  {
+    "product_id": "case-mini-itx-rgb",
+    "form_factor": [
+      "ITX"
+    ],
+    "max_gpu_length_mm": 210,
+    "max_cooler_height_mm": 125,
+    "m2_slots": 1,
+    "drive_bays": 1,
+    "front_usb_c": false,
+    "audio_header": true,
+    "power_w": 0.0
+  },
+  {
+    "product_id": "case-micro-atx",
+    "form_factor": [
+      "mATX",
+      "ITX"
+    ],
+    "max_gpu_length_mm": 300,
+    "max_cooler_height_mm": 160,
+    "m2_slots": 2,
+    "drive_bays": 3,
+    "front_usb_c": false,
+    "audio_header": true,
+    "power_w": 0.0
+  },
+  {
+    "product_id": "case-sff-vertical",
+    "form_factor": [
+      "ITX"
+    ],
+    "max_gpu_length_mm": 280,
+    "max_cooler_height_mm": 130,
+    "m2_slots": 1,
+    "drive_bays": 1,
+    "front_usb_c": false,
+    "audio_header": false,
+    "power_w": 0.0
+  },
+  {
+    "product_id": "case-tempered-rgb",
+    "form_factor": [
+      "ATX",
+      "mATX"
+    ],
+    "max_gpu_length_mm": 360,
+    "max_cooler_height_mm": 170,
+    "m2_slots": 3,
+    "drive_bays": 3,
+    "front_usb_c": true,
+    "audio_header": true,
+    "power_w": 0.0
+  },
+  {
+    "product_id": "case-silent",
+    "form_factor": [
+      "ATX",
+      "mATX",
+      "ITX"
+    ],
+    "max_gpu_length_mm": 320,
+    "max_cooler_height_mm": 170,
+    "m2_slots": 2,
+    "drive_bays": 4,
+    "front_usb_c": false,
+    "audio_header": true,
+    "power_w": 0.0
+  },
+  {
+    "product_id": "case-gaming-compact",
+    "form_factor": [
+      "mATX",
+      "ITX"
+    ],
+    "max_gpu_length_mm": 300,
+    "max_cooler_height_mm": 150,
+    "m2_slots": 2,
+    "drive_bays": 2,
+    "front_usb_c": true,
+    "audio_header": true,
+    "power_w": 0.0
+  },
+  {
+    "product_id": "case-dual-chamber",
+    "form_factor": [
+      "ATX",
+      "mATX"
+    ],
+    "max_gpu_length_mm": 380,
+    "max_cooler_height_mm": 175,
+    "m2_slots": 3,
+    "drive_bays": 5,
+    "front_usb_c": true,
+    "audio_header": true,
+    "power_w": 40.0
+  },
+  {
+    "product_id": "case-tempered-mini",
+    "form_factor": [
+      "mATX",
+      "ITX"
+    ],
+    "max_gpu_length_mm": 300,
+    "max_cooler_height_mm": 160,
+    "m2_slots": 2,
+    "drive_bays": 2,
+    "front_usb_c": false,
+    "audio_header": true,
+    "power_w": 0.0
+  },
+  {
+    "product_id": "case-rgb-tower",
+    "form_factor": [
+      "ATX",
+      "mATX"
+    ],
+    "max_gpu_length_mm": 340,
+    "max_cooler_height_mm": 168,
+    "m2_slots": 3,
+    "drive_bays": 3,
+    "front_usb_c": true,
+    "audio_header": true,
+    "power_w": 0.0
+  },
+  {
+    "product_id": "case-compact-airflow",
+    "form_factor": [
+      "mATX",
+      "ITX"
+    ],
+    "max_gpu_length_mm": 310,
+    "max_cooler_height_mm": 165,
+    "m2_slots": 2,
+    "drive_bays": 2,
+    "front_usb_c": false,
+    "audio_header": true,
+    "power_w": 0.0
+  },
+  {
+    "product_id": "case-workstation",
+    "form_factor": [
+      "E-ATX",
+      "ATX"
+    ],
+    "max_gpu_length_mm": 400,
+    "max_cooler_height_mm": 185,
+    "m2_slots": 6,
+    "drive_bays": 8,
+    "front_usb_c": true,
+    "audio_header": true,
+    "power_w": 0.0
+  },
+  {
+    "product_id": "case-open-frame",
+    "form_factor": [
+      "ATX"
+    ],
+    "max_gpu_length_mm": 420,
+    "max_cooler_height_mm": 200,
+    "m2_slots": 4,
+    "drive_bays": 0,
+    "front_usb_c": false,
+    "audio_header": false,
+    "power_w": 0.0
+  },
+  {
+    "product_id": "case-vertical-gpu",
+    "form_factor": [
+      "ATX",
+      "mATX"
+    ],
+    "max_gpu_length_mm": 340,
+    "max_cooler_height_mm": 170,
+    "m2_slots": 3,
+    "drive_bays": 3,
+    "front_usb_c": true,
+    "audio_header": true,
+    "power_w": 150.0
+  }
+]

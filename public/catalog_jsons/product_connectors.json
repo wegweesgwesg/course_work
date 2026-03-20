@@ -1,0 +1,44 @@
+[
+  {
+    "connector_id": "conn-1",
+    "product_id": "gpu-rx5600",
+    "connector_type": "8pin",
+    "power_w": 120.0
+  },
+  {
+    "connector_id": "conn-2",
+    "product_id": "gpu-gtx1660",
+    "connector_type": "6pin",
+    "power_w": 120.0
+  },
+  {
+    "connector_id": "conn-3",
+    "product_id": "psu-650w",
+    "connector_type": "8pin",
+    "power_w": 650.0
+  },
+  {
+    "connector_id": "conn-4",
+    "product_id": "psu-650w",
+    "connector_type": "6pin",
+    "power_w": 650.0
+  },
+  {
+    "connector_id": "conn-5",
+    "product_id": "psu-650w",
+    "connector_type": "sata",
+    "power_w": 650.0
+  },
+  {
+    "connector_id": "conn-6",
+    "product_id": "psu-500w",
+    "connector_type": "6pin",
+    "power_w": 500.0
+  },
+  {
+    "connector_id": "conn-7",
+    "product_id": "psu-500w",
+    "connector_type": "sata",
+    "power_w": 500.0
+  }
+]

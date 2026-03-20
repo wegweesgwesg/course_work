@@ -1,0 +1,1472 @@
+[
+  {
+    "image_id": "img-1",
+    "product_id": "cpu-ryzen5-3600",
+    "name": "AMD Ryzen 5 3600",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3600.0
+  },
+  {
+    "image_id": "img-2",
+    "product_id": "cpu-i5-10400",
+    "name": "Intel Core i5-10400",
+    "stock_quantity": 0,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 400.0
+  },
+  {
+    "image_id": "img-3",
+    "product_id": "mb-asus-b550",
+    "name": "ASUS B550",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 550.0
+  },
+  {
+    "image_id": "img-4",
+    "product_id": "mb-msi-z490",
+    "name": "MSI Z490",
+    "stock_quantity": 2,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 490.0
+  },
+  {
+    "image_id": "img-5",
+    "product_id": "ram-16-ddr4-3200",
+    "name": "16GB DDR4 3200",
+    "stock_quantity": 10,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 16.0
+  },
+  {
+    "image_id": "img-6",
+    "product_id": "ram-8-ddr4-2666",
+    "name": "8GB DDR4 2666",
+    "stock_quantity": 0,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 2666.0
+  },
+  {
+    "image_id": "img-7",
+    "product_id": "gpu-rx5600",
+    "name": "AMD RX 5600 XT",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 5600.0
+  },
+  {
+    "image_id": "img-8",
+    "product_id": "gpu-gtx1660",
+    "name": "NVIDIA GTX 1660",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 1660.0
+  },
+  {
+    "image_id": "img-9",
+    "product_id": "nvme-1tb",
+    "name": "NVMe 1TB",
+    "stock_quantity": 7,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 6.0
+  },
+  {
+    "image_id": "img-10",
+    "product_id": "hdd-2tb",
+    "name": "HDD 2TB",
+    "stock_quantity": 2,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 7.0
+  },
+  {
+    "image_id": "img-11",
+    "product_id": "psu-650w",
+    "name": "PSU 650W",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 650.0
+  },
+  {
+    "image_id": "img-12",
+    "product_id": "psu-500w",
+    "name": "PSU 500W",
+    "stock_quantity": 0,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 500.0
+  },
+  {
+    "image_id": "img-13",
+    "product_id": "cooler-140mm",
+    "name": "Air Cooler 140mm",
+    "stock_quantity": 9,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 140.0
+  },
+  {
+    "image_id": "img-14",
+    "product_id": "aio-240",
+    "name": "AIO 240mm",
+    "stock_quantity": 1,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 240.0
+  },
+  {
+    "image_id": "img-15",
+    "product_id": "case-mid-atx",
+    "name": "MID Tower ATX",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 0.0
+  },
+  {
+    "image_id": "img-16",
+    "product_id": "case-mini-itx",
+    "name": "Mini ITX",
+    "stock_quantity": 2,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 0.0
+  },
+  {
+    "image_id": "img-17",
+    "product_id": "cpu-ryzen3-3100",
+    "name": "AMD Ryzen 3 3100",
+    "stock_quantity": 8,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3100.0
+  },
+  {
+    "image_id": "img-18",
+    "product_id": "cpu-ryzen3-3300x",
+    "name": "AMD Ryzen 3 3300X",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3300.0
+  },
+  {
+    "image_id": "img-19",
+    "product_id": "cpu-ryzen5-3600x",
+    "name": "AMD Ryzen 5 3600X",
+    "stock_quantity": 7,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3600.0
+  },
+  {
+    "image_id": "img-20",
+    "product_id": "cpu-ryzen5-5600x",
+    "name": "AMD Ryzen 5 5600X",
+    "stock_quantity": 12,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 5600.0
+  },
+  {
+    "image_id": "img-21",
+    "product_id": "cpu-ryzen5-7600x",
+    "name": "AMD Ryzen 5 7600X",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 7600.0
+  },
+  {
+    "image_id": "img-22",
+    "product_id": "cpu-ryzen7-3700x",
+    "name": "AMD Ryzen 7 3700X",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3700.0
+  },
+  {
+    "image_id": "img-23",
+    "product_id": "cpu-ryzen7-5800x",
+    "name": "AMD Ryzen 7 5800X",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 5800.0
+  },
+  {
+    "image_id": "img-24",
+    "product_id": "cpu-ryzen7-7700x",
+    "name": "AMD Ryzen 7 7700X",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 7700.0
+  },
+  {
+    "image_id": "img-25",
+    "product_id": "cpu-ryzen9-3900x",
+    "name": "AMD Ryzen 9 3900X",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3900.0
+  },
+  {
+    "image_id": "img-26",
+    "product_id": "cpu-ryzen9-5900x",
+    "name": "AMD Ryzen 9 5900X",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 5900.0
+  },
+  {
+    "image_id": "img-27",
+    "product_id": "cpu-ryzen9-7950x",
+    "name": "AMD Ryzen 9 7950X",
+    "stock_quantity": 2,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 7950.0
+  },
+  {
+    "image_id": "img-28",
+    "product_id": "cpu-intel-i3-10100",
+    "name": "Intel Core i3-10100",
+    "stock_quantity": 10,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 100.0
+  },
+  {
+    "image_id": "img-29",
+    "product_id": "cpu-intel-i3-12100",
+    "name": "Intel Core i3-12100",
+    "stock_quantity": 11,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 2100.0
+  },
+  {
+    "image_id": "img-30",
+    "product_id": "cpu-intel-i5-10400",
+    "name": "Intel Core i5-10400",
+    "stock_quantity": 7,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 400.0
+  },
+  {
+    "image_id": "img-31",
+    "product_id": "cpu-intel-i5-11400",
+    "name": "Intel Core i5-11400",
+    "stock_quantity": 9,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 1400.0
+  },
+  {
+    "image_id": "img-32",
+    "product_id": "cpu-intel-i5-12600k",
+    "name": "Intel Core i5-12600K",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 2600.0
+  },
+  {
+    "image_id": "img-33",
+    "product_id": "cpu-intel-i5-13600k",
+    "name": "Intel Core i5-13600K",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3600.0
+  },
+  {
+    "image_id": "img-34",
+    "product_id": "cpu-intel-i7-10700k",
+    "name": "Intel Core i7-10700K",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 700.0
+  },
+  {
+    "image_id": "img-35",
+    "product_id": "cpu-intel-i7-11700k",
+    "name": "Intel Core i7-11700K",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 1700.0
+  },
+  {
+    "image_id": "img-36",
+    "product_id": "cpu-intel-i7-12700k",
+    "name": "Intel Core i7-12700K",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 2700.0
+  },
+  {
+    "image_id": "img-37",
+    "product_id": "cpu-intel-i7-13700k",
+    "name": "Intel Core i7-13700K",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3700.0
+  },
+  {
+    "image_id": "img-38",
+    "product_id": "cpu-intel-i9-10900k",
+    "name": "Intel Core i9-10900K",
+    "stock_quantity": 2,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 900.0
+  },
+  {
+    "image_id": "img-39",
+    "product_id": "cpu-intel-i9-12900k",
+    "name": "Intel Core i9-12900K",
+    "stock_quantity": 2,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 2900.0
+  },
+  {
+    "image_id": "img-40",
+    "product_id": "cpu-intel-i9-13900k",
+    "name": "Intel Core i9-13900K",
+    "stock_quantity": 2,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3900.0
+  },
+  {
+    "image_id": "img-41",
+    "product_id": "cpu-ryzen5-4500",
+    "name": "AMD Ryzen 5 4500",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 4500.0
+  },
+  {
+    "image_id": "img-42",
+    "product_id": "cpu-ryzen5-3400g",
+    "name": "AMD Ryzen 5 3400G",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3400.0
+  },
+  {
+    "image_id": "img-43",
+    "product_id": "cpu-ryzen5-4650g",
+    "name": "AMD Ryzen 5 4650G",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 4650.0
+  },
+  {
+    "image_id": "img-44",
+    "product_id": "cpu-ryzen3-4100",
+    "name": "AMD Ryzen 3 4100",
+    "stock_quantity": 8,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 4100.0
+  },
+  {
+    "image_id": "img-45",
+    "product_id": "cpu-athlon-3000g",
+    "name": "AMD Athlon 3000G",
+    "stock_quantity": 12,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3000.0
+  },
+  {
+    "image_id": "img-46",
+    "product_id": "cpu-intel-pentium-g6400",
+    "name": "Intel Pentium Gold G6400",
+    "stock_quantity": 15,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 6400.0
+  },
+  {
+    "image_id": "img-47",
+    "product_id": "cpu-intel-i9-14900k",
+    "name": "Intel Core i9-14900K",
+    "stock_quantity": 1,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 4900.0
+  },
+  {
+    "image_id": "img-48",
+    "product_id": "cpu-ryzen9-5900",
+    "name": "AMD Ryzen 9 5900",
+    "stock_quantity": 2,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 5900.0
+  },
+  {
+    "image_id": "img-49",
+    "product_id": "cpu-ryzen7-5700g",
+    "name": "AMD Ryzen 7 5700G",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 5700.0
+  },
+  {
+    "image_id": "img-50",
+    "product_id": "cpu-intel-i5-12400",
+    "name": "Intel Core i5-12400",
+    "stock_quantity": 9,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 2400.0
+  },
+  {
+    "image_id": "img-51",
+    "product_id": "mb-asus-x670e-tuf",
+    "name": "ASUS TUF X670E",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 670.0
+  },
+  {
+    "image_id": "img-52",
+    "product_id": "mb-gigabyte-x670-aorus",
+    "name": "Gigabyte X670 AORUS",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 670.0
+  },
+  {
+    "image_id": "img-53",
+    "product_id": "mb-asrock-b650e-pro4",
+    "name": "ASRock B650E Pro4",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 650.0
+  },
+  {
+    "image_id": "img-54",
+    "product_id": "mb-asus-b550-fgaming",
+    "name": "ASUS B550-F Gaming",
+    "stock_quantity": 10,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 550.0
+  },
+  {
+    "image_id": "img-55",
+    "product_id": "mb-msi-b550m-pro",
+    "name": "MSI B550M PRO",
+    "stock_quantity": 9,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 550.0
+  },
+  {
+    "image_id": "img-56",
+    "product_id": "mb-gigabyte-x570-aorus",
+    "name": "Gigabyte X570 AORUS",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 570.0
+  },
+  {
+    "image_id": "img-57",
+    "product_id": "mb-asrock-b460m",
+    "name": "ASRock B460M",
+    "stock_quantity": 8,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 460.0
+  },
+  {
+    "image_id": "img-58",
+    "product_id": "mb-asus-z690-a",
+    "name": "ASUS Z690-A",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 690.0
+  },
+  {
+    "image_id": "img-59",
+    "product_id": "mb-msi-z790-pro",
+    "name": "MSI Z790 PRO",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 790.0
+  },
+  {
+    "image_id": "img-60",
+    "product_id": "mb-gigabyte-b660m",
+    "name": "Gigabyte B660M",
+    "stock_quantity": 7,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 660.0
+  },
+  {
+    "image_id": "img-61",
+    "product_id": "mb-asus-b650i-mini",
+    "name": "ASUS B650I Mini-ITX",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 650.0
+  },
+  {
+    "image_id": "img-62",
+    "product_id": "mb-asrock-x570-itx",
+    "name": "ASRock X570 Mini-ITX",
+    "stock_quantity": 2,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 570.0
+  },
+  {
+    "image_id": "img-63",
+    "product_id": "mb-gigabyte-z490-aorus",
+    "name": "Gigabyte Z490 AORUS",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 490.0
+  },
+  {
+    "image_id": "img-64",
+    "product_id": "mb-msi-z590-pro",
+    "name": "MSI Z590 PRO",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 590.0
+  },
+  {
+    "image_id": "img-65",
+    "product_id": "mb-asus-tuf-b550m-plus",
+    "name": "ASUS TUF B550M-PLUS",
+    "stock_quantity": 11,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 550.0
+  },
+  {
+    "image_id": "img-66",
+    "product_id": "ram-8-ddr4-2400",
+    "name": "8GB DDR4 2400",
+    "stock_quantity": 14,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 2400.0
+  },
+  {
+    "image_id": "img-67",
+    "product_id": "ram-8-ddr5-4800",
+    "name": "8GB DDR5 4800",
+    "stock_quantity": 10,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 4800.0
+  },
+  {
+    "image_id": "img-68",
+    "product_id": "ram-16-ddr4-3000",
+    "name": "16GB DDR4 3000",
+    "stock_quantity": 12,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 16.0
+  },
+  {
+    "image_id": "img-69",
+    "product_id": "ram-16-ddr5-5200",
+    "name": "16GB DDR5 5200",
+    "stock_quantity": 8,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 16.0
+  },
+  {
+    "image_id": "img-70",
+    "product_id": "ram-32-ddr4-3200",
+    "name": "32GB DDR4 3200",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 32.0
+  },
+  {
+    "image_id": "img-71",
+    "product_id": "ram-32-ddr5-5600",
+    "name": "32GB DDR5 5600",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 32.0
+  },
+  {
+    "image_id": "img-72",
+    "product_id": "ram-64-ddr4-3200",
+    "name": "64GB DDR4 3200",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 64.0
+  },
+  {
+    "image_id": "img-75",
+    "product_id": "gpu-rx6600",
+    "name": "AMD RX 6600",
+    "stock_quantity": 8,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 6600.0
+  },
+  {
+    "image_id": "img-76",
+    "product_id": "gpu-rx6700",
+    "name": "AMD RX 6700",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 6700.0
+  },
+  {
+    "image_id": "img-77",
+    "product_id": "gpu-rx6700-xt",
+    "name": "AMD RX 6700 XT",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 6700.0
+  },
+  {
+    "image_id": "img-78",
+    "product_id": "gpu-rx6800",
+    "name": "AMD RX 6800",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 6800.0
+  },
+  {
+    "image_id": "img-79",
+    "product_id": "gpu-rx6800-xt",
+    "name": "AMD RX 6800 XT",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 6800.0
+  },
+  {
+    "image_id": "img-80",
+    "product_id": "gpu-rx6900-xt",
+    "name": "AMD RX 6900 XT",
+    "stock_quantity": 2,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 6900.0
+  },
+  {
+    "image_id": "img-81",
+    "product_id": "gpu-rtx3060",
+    "name": "NVIDIA RTX 3060",
+    "stock_quantity": 10,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3060.0
+  },
+  {
+    "image_id": "img-82",
+    "product_id": "gpu-rtx3060-ti",
+    "name": "NVIDIA RTX 3060 Ti",
+    "stock_quantity": 7,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3060.0
+  },
+  {
+    "image_id": "img-83",
+    "product_id": "gpu-rtx3070",
+    "name": "NVIDIA RTX 3070",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3070.0
+  },
+  {
+    "image_id": "img-84",
+    "product_id": "gpu-rtx3070-ti",
+    "name": "NVIDIA RTX 3070 Ti",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3070.0
+  },
+  {
+    "image_id": "img-85",
+    "product_id": "gpu-rtx3080",
+    "name": "NVIDIA RTX 3080",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3080.0
+  },
+  {
+    "image_id": "img-86",
+    "product_id": "gpu-rtx3080-ti",
+    "name": "NVIDIA RTX 3080 Ti",
+    "stock_quantity": 2,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3080.0
+  },
+  {
+    "image_id": "img-87",
+    "product_id": "gpu-rtx3090",
+    "name": "NVIDIA RTX 3090",
+    "stock_quantity": 1,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 3090.0
+  },
+  {
+    "image_id": "img-88",
+    "product_id": "gpu-rtx4060",
+    "name": "NVIDIA RTX 4060",
+    "stock_quantity": 9,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 4060.0
+  },
+  {
+    "image_id": "img-89",
+    "product_id": "gpu-rtx4070",
+    "name": "NVIDIA RTX 4070",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 4070.0
+  },
+  {
+    "image_id": "img-90",
+    "product_id": "nvme-250gb",
+    "name": "NVMe 250GB",
+    "stock_quantity": 15,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 250.0
+  },
+  {
+    "image_id": "img-91",
+    "product_id": "nvme-500gb",
+    "name": "NVMe 500GB",
+    "stock_quantity": 12,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 500.0
+  },
+  {
+    "image_id": "img-92",
+    "product_id": "nvme-512gb",
+    "name": "NVMe 512GB",
+    "stock_quantity": 14,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 512.0
+  },
+  {
+    "image_id": "img-93",
+    "product_id": "nvme-1tb-pro",
+    "name": "NVMe 1TB PRO",
+    "stock_quantity": 9,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 6.0
+  },
+  {
+    "image_id": "img-94",
+    "product_id": "nvme-2tb",
+    "name": "NVMe 2TB",
+    "stock_quantity": 8,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 6.0
+  },
+  {
+    "image_id": "img-95",
+    "product_id": "nvme-4tb",
+    "name": "NVMe 4TB",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 6.0
+  },
+  {
+    "image_id": "img-96",
+    "product_id": "ssd-240gb",
+    "name": "SATA SSD 240GB",
+    "stock_quantity": 20,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 240.0
+  },
+  {
+    "image_id": "img-97",
+    "product_id": "ssd-480gb",
+    "name": "SATA SSD 480GB",
+    "stock_quantity": 18,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 480.0
+  },
+  {
+    "image_id": "img-98",
+    "product_id": "ssd-1tb",
+    "name": "SATA SSD 1TB",
+    "stock_quantity": 10,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 5.0
+  },
+  {
+    "image_id": "img-99",
+    "product_id": "ssd-2tb",
+    "name": "SATA SSD 2TB",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 5.0
+  },
+  {
+    "image_id": "img-100",
+    "product_id": "m2-sata-1tb",
+    "name": "M.2 SATA 1TB",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 6.0
+  },
+  {
+    "image_id": "img-101",
+    "product_id": "hdd-1tb",
+    "name": "HDD 1TB",
+    "stock_quantity": 7,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 7.0
+  },
+  {
+    "image_id": "img-102",
+    "product_id": "hdd-4tb",
+    "name": "HDD 4TB",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 7.0
+  },
+  {
+    "image_id": "img-103",
+    "product_id": "hybrid-1tb",
+    "name": "SSHD Hybrid 1TB",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 5.0
+  },
+  {
+    "image_id": "img-104",
+    "product_id": "external-ssd-1tb",
+    "name": "External SSD 1TB",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 5.0
+  },
+  {
+    "image_id": "img-105",
+    "product_id": "psu-450w",
+    "name": "PSU 450W",
+    "stock_quantity": 10,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 450.0
+  },
+  {
+    "image_id": "img-106",
+    "product_id": "psu-550w",
+    "name": "PSU 550W",
+    "stock_quantity": 8,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 550.0
+  },
+  {
+    "image_id": "img-107",
+    "product_id": "psu-600w",
+    "name": "PSU 600W",
+    "stock_quantity": 7,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 600.0
+  },
+  {
+    "image_id": "img-108",
+    "product_id": "psu-650w-gold",
+    "name": "PSU 650W Gold",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 650.0
+  },
+  {
+    "image_id": "img-109",
+    "product_id": "psu-650w-platinum",
+    "name": "PSU 650W Platinum",
+    "stock_quantity": 2,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 650.0
+  },
+  {
+    "image_id": "img-110",
+    "product_id": "psu-750w",
+    "name": "PSU 750W",
+    "stock_quantity": 9,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 750.0
+  },
+  {
+    "image_id": "img-111",
+    "product_id": "psu-750w-modular",
+    "name": "PSU 750W Modular",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 750.0
+  },
+  {
+    "image_id": "img-112",
+    "product_id": "psu-750w-gold",
+    "name": "PSU 750W Gold",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 750.0
+  },
+  {
+    "image_id": "img-113",
+    "product_id": "psu-850w",
+    "name": "PSU 850W",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 850.0
+  },
+  {
+    "image_id": "img-114",
+    "product_id": "psu-850w-gold",
+    "name": "PSU 850W Gold",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 850.0
+  },
+  {
+    "image_id": "img-115",
+    "product_id": "psu-1000w",
+    "name": "PSU 1000W",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 1000.0
+  },
+  {
+    "image_id": "img-116",
+    "product_id": "psu-1000w-modular",
+    "name": "PSU 1000W Modular",
+    "stock_quantity": 2,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 1000.0
+  },
+  {
+    "image_id": "img-117",
+    "product_id": "psu-1200w",
+    "name": "PSU 1200W",
+    "stock_quantity": 1,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 1200.0
+  },
+  {
+    "image_id": "img-118",
+    "product_id": "psu-sfx-650w",
+    "name": "PSU SFX 650W",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 650.0
+  },
+  {
+    "image_id": "img-119",
+    "product_id": "psu-sfx-450w",
+    "name": "PSU SFX 450W",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 450.0
+  },
+  {
+    "image_id": "img-120",
+    "product_id": "cooler-120mm",
+    "name": "Air Cooler 120mm",
+    "stock_quantity": 15,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 120.0
+  },
+  {
+    "image_id": "img-121",
+    "product_id": "cooler-92mm",
+    "name": "Low-profile Cooler 92mm",
+    "stock_quantity": 10,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 92.0
+  },
+  {
+    "image_id": "img-122",
+    "product_id": "cooler-120mm-twin",
+    "name": "Dual 120mm Cooler",
+    "stock_quantity": 8,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 120.0
+  },
+  {
+    "image_id": "img-123",
+    "product_id": "cooler-140mm-pro",
+    "name": "Air Cooler 140mm Pro",
+    "stock_quantity": 7,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 140.0
+  },
+  {
+    "image_id": "img-124",
+    "product_id": "cooler-tower-160mm",
+    "name": "Tower Cooler 160mm",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 160.0
+  },
+  {
+    "image_id": "img-125",
+    "product_id": "cooler-lowprofile-45",
+    "name": "Low-profile Cooler 45mm",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 45.0
+  },
+  {
+    "image_id": "img-126",
+    "product_id": "cooler-130mm",
+    "name": "Air Cooler 130mm",
+    "stock_quantity": 12,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 130.0
+  },
+  {
+    "image_id": "img-127",
+    "product_id": "aio-120",
+    "name": "AIO 120mm",
+    "stock_quantity": 9,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 120.0
+  },
+  {
+    "image_id": "img-128",
+    "product_id": "aio-240-pro",
+    "name": "AIO 240mm Pro",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 240.0
+  },
+  {
+    "image_id": "img-129",
+    "product_id": "aio-280",
+    "name": "AIO 280mm",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 280.0
+  },
+  {
+    "image_id": "img-130",
+    "product_id": "aio-360",
+    "name": "AIO 360mm",
+    "stock_quantity": 2,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 360.0
+  },
+  {
+    "image_id": "img-131",
+    "product_id": "aio-420",
+    "name": "AIO 420mm",
+    "stock_quantity": 1,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 420.0
+  },
+  {
+    "image_id": "img-132",
+    "product_id": "cooler-sff-92mm",
+    "name": "SFF Cooler 92mm",
+    "stock_quantity": 11,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 92.0
+  },
+  {
+    "image_id": "img-133",
+    "product_id": "aio-240-rgb",
+    "name": "AIO 240mm RGB",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 240.0
+  },
+  {
+    "image_id": "img-134",
+    "product_id": "cooler-tower-150mm",
+    "name": "Tower Cooler 150mm",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 150.0
+  },
+  {
+    "image_id": "img-135",
+    "product_id": "case-atx-glass",
+    "name": "ATX Case Glass",
+    "stock_quantity": 7,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 0.0
+  },
+  {
+    "image_id": "img-136",
+    "product_id": "case-full-tower",
+    "name": "Full Tower",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 0.0
+  },
+  {
+    "image_id": "img-137",
+    "product_id": "case-mini-itx-rgb",
+    "name": "Mini ITX RGB",
+    "stock_quantity": 9,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 0.0
+  },
+  {
+    "image_id": "img-138",
+    "product_id": "case-micro-atx",
+    "name": "Micro-ATX Case",
+    "stock_quantity": 11,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 0.0
+  },
+  {
+    "image_id": "img-139",
+    "product_id": "case-sff-vertical",
+    "name": "SFF Vertical",
+    "stock_quantity": 5,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 0.0
+  },
+  {
+    "image_id": "img-140",
+    "product_id": "case-tempered-rgb",
+    "name": "Tempered Glass RGB",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 0.0
+  },
+  {
+    "image_id": "img-141",
+    "product_id": "case-silent",
+    "name": "Silent Case",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 0.0
+  },
+  {
+    "image_id": "img-142",
+    "product_id": "case-gaming-compact",
+    "name": "Gaming Compact",
+    "stock_quantity": 8,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 0.0
+  },
+  {
+    "image_id": "img-143",
+    "product_id": "case-dual-chamber",
+    "name": "Dual Chamber Case",
+    "stock_quantity": 3,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 40.0
+  },
+  {
+    "image_id": "img-144",
+    "product_id": "case-tempered-mini",
+    "name": "Tempered Mini Tower",
+    "stock_quantity": 10,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 0.0
+  },
+  {
+    "image_id": "img-145",
+    "product_id": "case-rgb-tower",
+    "name": "RGB Tower",
+    "stock_quantity": 6,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 0.0
+  },
+  {
+    "image_id": "img-146",
+    "product_id": "case-compact-airflow",
+    "name": "Compact Airflow",
+    "stock_quantity": 7,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 0.0
+  },
+  {
+    "image_id": "img-147",
+    "product_id": "case-workstation",
+    "name": "Workstation Case",
+    "stock_quantity": 2,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 0.0
+  },
+  {
+    "image_id": "img-148",
+    "product_id": "case-open-frame",
+    "name": "Open Frame",
+    "stock_quantity": 1,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 0.0
+  },
+  {
+    "image_id": "img-149",
+    "product_id": "case-vertical-gpu",
+    "name": "Vertical GPU Case",
+    "stock_quantity": 4,
+    "description": "",
+    "main_image_path": "",
+    "is_active": true,
+    "power_w": 150.0
+  }
+]

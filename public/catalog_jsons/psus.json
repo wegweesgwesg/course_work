@@ -1,0 +1,70 @@
+[
+  {
+    "product_id": "psu-650w",
+    "power_w": 650.0
+  },
+  {
+    "product_id": "psu-500w",
+    "power_w": 500.0
+  },
+  {
+    "product_id": "psu-450w",
+    "power_w": 450.0
+  },
+  {
+    "product_id": "psu-550w",
+    "power_w": 550.0
+  },
+  {
+    "product_id": "psu-600w",
+    "power_w": 600.0
+  },
+  {
+    "product_id": "psu-650w-gold",
+    "power_w": 650.0
+  },
+  {
+    "product_id": "psu-650w-platinum",
+    "power_w": 650.0
+  },
+  {
+    "product_id": "psu-750w",
+    "power_w": 750.0
+  },
+  {
+    "product_id": "psu-750w-modular",
+    "power_w": 750.0
+  },
+  {
+    "product_id": "psu-750w-gold",
+    "power_w": 750.0
+  },
+  {
+    "product_id": "psu-850w",
+    "power_w": 850.0
+  },
+  {
+    "product_id": "psu-850w-gold",
+    "power_w": 850.0
+  },
+  {
+    "product_id": "psu-1000w",
+    "power_w": 1000.0
+  },
+  {
+    "product_id": "psu-1000w-modular",
+    "power_w": 1000.0
+  },
+  {
+    "product_id": "psu-1200w",
+    "power_w": 1200.0
+  },
+  {
+    "product_id": "psu-sfx-650w",
+    "power_w": 650.0
+  },
+  {
+    "product_id": "psu-sfx-450w",
+    "power_w": 450.0
+  }
+]

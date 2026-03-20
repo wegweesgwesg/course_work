@@ -1,0 +1,114 @@
+[
+  {
+    "template_item_id": "titem-1",
+    "template_id": "tpl-gaming-01",
+    "slot_type": "cpu",
+    "product_id": "cpu-ryzen5-3600",
+    "power_w": 65.0
+  },
+  {
+    "template_item_id": "titem-2",
+    "template_id": "tpl-gaming-01",
+    "slot_type": "motherboard",
+    "product_id": "mb-asus-b550",
+    "power_w": 40.0
+  },
+  {
+    "template_item_id": "titem-3",
+    "template_id": "tpl-gaming-01",
+    "slot_type": "ram",
+    "product_id": "ram-16-ddr4-3200",
+    "power_w": 3.0
+  },
+  {
+    "template_item_id": "titem-4",
+    "template_id": "tpl-gaming-01",
+    "slot_type": "gpu",
+    "product_id": "gpu-rx5600",
+    "power_w": 120.0
+  },
+  {
+    "template_item_id": "titem-5",
+    "template_id": "tpl-gaming-01",
+    "slot_type": "storage",
+    "product_id": "nvme-1tb",
+    "power_w": 6.0
+  },
+  {
+    "template_item_id": "titem-6",
+    "template_id": "tpl-gaming-01",
+    "slot_type": "psu",
+    "product_id": "psu-650w",
+    "power_w": 650.0
+  },
+  {
+    "template_item_id": "titem-7",
+    "template_id": "tpl-gaming-01",
+    "slot_type": "cooler",
+    "product_id": "cooler-140mm",
+    "power_w": 3.0
+  },
+  {
+    "template_item_id": "titem-8",
+    "template_id": "tpl-gaming-01",
+    "slot_type": "case",
+    "product_id": "case-mid-atx",
+    "power_w": 0.0
+  },
+  {
+    "template_item_id": "titem-9",
+    "template_id": "tpl-office-01",
+    "slot_type": "cpu",
+    "product_id": "cpu-i5-10400",
+    "power_w": 65.0
+  },
+  {
+    "template_item_id": "titem-10",
+    "template_id": "tpl-office-01",
+    "slot_type": "motherboard",
+    "product_id": "mb-msi-z490",
+    "power_w": 40.0
+  },
+  {
+    "template_item_id": "titem-11",
+    "template_id": "tpl-office-01",
+    "slot_type": "ram",
+    "product_id": "ram-8-ddr4-2666",
+    "power_w": 3.0
+  },
+  {
+    "template_item_id": "titem-12",
+    "template_id": "tpl-office-01",
+    "slot_type": "gpu",
+    "product_id": "gpu-gtx1660",
+    "power_w": 120.0
+  },
+  {
+    "template_item_id": "titem-13",
+    "template_id": "tpl-office-01",
+    "slot_type": "storage",
+    "product_id": "hdd-2tb",
+    "power_w": 7.0
+  },
+  {
+    "template_item_id": "titem-14",
+    "template_id": "tpl-office-01",
+    "slot_type": "psu",
+    "product_id": "psu-500w",
+    "power_w": 500.0
+  },
+  {
+    "template_item_id": "titem-15",
+    "template_id": "tpl-office-01",
+    "slot_type": "cooler",
+    "product_id": "aio-240",
+    "power_w": 8.0
+  },
+  {
+    "template_item_id": "titem-16",
+    "template_id": "tpl-office-01",
+    "slot_type": "case",
+    "product_id": "case-mini-itx",
+    "power_w": 0.0
+  }
+]
